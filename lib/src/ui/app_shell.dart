@@ -86,7 +86,11 @@ class AppShell extends StatelessWidget {
               leading: const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: _Logo(size: 40)),
               indicatorColor: c.accent.withValues(alpha: 0.25),
               destinations: [
-                for (final d in destinations) NavigationRailDestination(icon: Icon(d.icon), label: Text(d.label)),
+                for (final d in destinations)
+                  NavigationRailDestination(
+                    icon: Icon(d.icon, key: ValueKey('nav ${d.label}')),
+                    label: Text(d.label),
+                  ),
               ],
             ),
             VerticalDivider(width: 1, color: c.line),
@@ -105,7 +109,13 @@ class AppShell extends StatelessWidget {
         indicatorColor: c.accent.withValues(alpha: 0.28),
         height: 68,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        destinations: [for (final d in destinations) NavigationDestination(icon: Icon(d.icon), label: d.label)],
+        destinations: [
+          for (final d in destinations)
+            NavigationDestination(
+              icon: Icon(d.icon, key: ValueKey('nav ${d.label}')),
+              label: d.label,
+            ),
+        ],
       ),
     );
   }
@@ -236,7 +246,12 @@ class _SideItem extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
               child: Row(
                 children: [
-                  Icon(destination.icon, size: 21, color: selected ? c.ink : c.muted),
+                  Icon(
+                    destination.icon,
+                    key: ValueKey('nav ${destination.label}'),
+                    size: 21,
+                    color: selected ? c.ink : c.muted,
+                  ),
                   const SizedBox(width: 12),
                   Text(
                     destination.label,
