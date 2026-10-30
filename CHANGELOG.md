@@ -2,6 +2,18 @@
 
 ## 1.0.0 (in development)
 
+### Phase 2: look and feel
+- Light and dark themes in the logo's navy and survey gold; follows the computer, with a switch
+  in the header. Text size 85 % to 130 % (A− / A+).
+- Inter and JetBrains Mono fonts inside the app (SIL Open Font Licence), so it looks the same
+  offline; figures line up in columns.
+- Building blocks: numbered step cards (optional ones fold away), number tiles with their short
+  name (Y1) and the chainage under them, Enter to move on, interval choices, a pick-one box, the
+  slope % card, result tiles, notices, a table whose header stays in view, and the profile.
+- The frame: a menu down the left on a computer, a rail on a tablet and a bar along the bottom on
+  a phone; Calculator, Crossfall, Level, Saved and Settings.
+- The calculator screen on the phase 1 calculations, to judge the design on real numbers.
+
 ### Phase 1: calculation engine
 - Slope between two points: ΔH, ΔX, slope per metre, slope %, gradient 1 in N, rising, falling
   or level, and a plain-English summary.

@@ -14,11 +14,11 @@ details, lint rules, smoke test, Check workflow, V28 kept as the specification.
 - 63 tested cases, including the V28 examples and the Excel template, run on the computer and in a browser.
 - [Worked examples](worked-examples.md) to check by hand.
 
-## 🔜 Phase 2: look and feel
+## ✅ Phase 2: look and feel (waiting for approval of the screenshots)
 Colours, bundled fonts, inputs, tiles, tables, cards, foldable optional sections, wide and phone
 layouts, keyboard and screen-reader use, text size. Screenshots for approval.
 
-## ⬜ Phase 3: main screens
+## 🔜 Phase 3: main screens
 Start, calculator, results, profile with probe, chainage levels table, project plate, settings.
 
 ## ⬜ Phase 4: optional tools
