@@ -310,63 +310,70 @@ class _Header extends StatelessWidget {
         color: c.background,
         border: Border(bottom: BorderSide(color: c.line)),
       ),
-      child: Row(
-        children: [
-          if (compact) ...[const _Logo(size: 32), const SizedBox(width: 10)],
-          Expanded(
-            flex: 3,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  compact ? page.label : page.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: compact ? 19 : 24),
-                ),
-                if (!compact)
-                  Text(
-                    page.subtitle,
-                    style: TextStyle(color: c.muted, fontSize: 13.5, fontWeight: FontWeight.w500),
-                  ),
-              ],
-            ),
-          ),
-          // the page's buttons, then text size and light / dark: on a narrow window or with large
-          // text they wrap onto more lines instead of running off the edge
-          Flexible(
-            flex: 2,
-            child: ListenableBuilder(
-              listenable: settings,
-              builder: (context, _) => Wrap(
-                alignment: WrapAlignment.end,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: compact ? 0 : 8,
-                runSpacing: 4,
-                children: [
-                  ...actions,
-                  if (!compact) ...[
-                    IconButton(
-                      tooltip: 'Smaller text',
-                      onPressed: settings.canShrinkText ? settings.shrinkText : null,
-                      icon: const Icon(Icons.text_decrease_rounded),
+      child: LayoutBuilder(
+        builder: (context, box) {
+          final width = box.maxWidth;
+          return Row(
+            children: [
+              if (compact) ...[const _Logo(size: 32), const SizedBox(width: 10)],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      compact ? page.label : page.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: compact ? 19 : 24),
                     ),
-                    IconButton(
-                      tooltip: 'Larger text',
-                      onPressed: settings.canGrowText ? settings.growText : null,
-                      icon: const Icon(Icons.text_increase_rounded),
-                    ),
+                    if (!compact)
+                      Text(
+                        page.subtitle,
+                        style: TextStyle(color: c.muted, fontSize: 13.5, fontWeight: FontWeight.w500),
+                      ),
                   ],
-                  IconButton(
-                    tooltip: themeLabel,
-                    onPressed: () => settings.cycleTheme(brightness),
-                    icon: Icon(brightness == Brightness.light ? Icons.dark_mode_outlined : Icons.light_mode_outlined),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
-        ],
+              // the page's buttons, then text size and light / dark, at the right: on a narrow window or
+              // with large text they wrap onto more lines (within two thirds of the width) instead of
+              // running off the edge
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: width * 0.6),
+                child: ListenableBuilder(
+                  listenable: settings,
+                  builder: (context, _) => Wrap(
+                    alignment: WrapAlignment.end,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: compact ? 0 : 8,
+                    runSpacing: 4,
+                    children: [
+                      ...actions,
+                      if (!compact) ...[
+                        IconButton(
+                          tooltip: 'Smaller text',
+                          onPressed: settings.canShrinkText ? settings.shrinkText : null,
+                          icon: const Icon(Icons.text_decrease_rounded),
+                        ),
+                        IconButton(
+                          tooltip: 'Larger text',
+                          onPressed: settings.canGrowText ? settings.growText : null,
+                          icon: const Icon(Icons.text_increase_rounded),
+                        ),
+                      ],
+                      IconButton(
+                        tooltip: themeLabel,
+                        onPressed: () => settings.cycleTheme(brightness),
+                        icon: Icon(
+                          brightness == Brightness.light ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

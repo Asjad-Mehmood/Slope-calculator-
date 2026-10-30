@@ -361,15 +361,18 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                   const SizedBox(width: 8),
                   // the level stays whole: smaller rather than cut, with large text on a phone
                   Flexible(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        '${fixed(r.levelAt(probe), r.decimals)} m',
-                        style: TextStyle(
-                          color: c.ink,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 17,
-                          fontFeatures: tabular,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '${fixed(r.levelAt(probe), r.decimals)} m',
+                          style: TextStyle(
+                            color: c.ink,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 17,
+                            fontFeatures: tabular,
+                          ),
                         ),
                       ),
                     ),

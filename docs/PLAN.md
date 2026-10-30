@@ -57,8 +57,10 @@ and WebKit, wide and phone-sized, and offline; the Windows program installed, op
 uninstalled on a machine with no graphics card; the reports opened in LibreOffice and the PDF
 tools. Findings fixed; what needs real devices is a checklist in [TESTING.md](TESTING.md).
 
-## ⬜ Phase 10: manual and documents
-New manual (PDF and web page), worked examples, updated Excel template, release notes.
+## ✅ Phase 10: manual and documents
+User manual on the website (/slope-calculation/manual) and as a PDF, the worked examples in it,
+the Excel template in formulas (`docs/Slope-Calculator-Template.xlsx`, checked against the app in
+LibreOffice), release notes for 1.0.3 and 1.0.4.
 
 ## ⬜ Phase 11: release 1.0.0
 Beta for testing, fixes, release, product page live, optional announcement email.
