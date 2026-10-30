@@ -51,9 +51,11 @@ single instance, and the Build and Release workflow on a version tag that publis
 and checks the published download. Every push also builds a test installer (Actions → Artifacts).
 Code signing waits for the certificate.
 
-## ⬜ Phase 9: testing
-Windows 10 and 11, display scaling, a PC with no graphics card, Remote Desktop; browsers and
-phones; exports in Excel, LibreOffice and Adobe Reader; accounts and offline.
+## ✅ Phase 9: testing
+Every page at 5 sizes × 3 system text sizes × light and dark; the web app in Chromium, Firefox
+and WebKit, wide and phone-sized, and offline; the Windows program installed, opened and
+uninstalled on a machine with no graphics card; the reports opened in LibreOffice and the PDF
+tools. Findings fixed; what needs real devices is a checklist in [TESTING.md](TESTING.md).
 
 ## ⬜ Phase 10: manual and documents
 New manual (PDF and web page), worked examples, updated Excel template, release notes.
