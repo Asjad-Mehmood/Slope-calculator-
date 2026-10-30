@@ -43,9 +43,12 @@ for the figures, and saving while offline (now it says it can't reach the site).
 Web build at `/slope-calculation/app`, installable, offline; product page, menu, sitemap, home
 page "New" badge, download counts.
 
-## ⬜ Phase 8: Windows program
-NSIS installer, self-update from `latest.json`, single instance, release workflow on a version
-tag; code signing when the certificate is ready.
+## ✅ Phase 8: Windows program and GitHub build
+NSIS installer (per user, no admin, Start menu and desktop shortcuts, Settings → Apps), the
+Microsoft C++ runtime beside the program, self-update from `latest.json` with a SHA-256 check,
+single instance, and the Build and Release workflow on a version tag that publishes the installer
+and checks the published download. Every push also builds a test installer (Actions → Artifacts).
+Code signing waits for the certificate.
 
 ## ⬜ Phase 9: testing
 Windows 10 and 11, display scaling, a PC with no graphics card, Remote Desktop; browsers and

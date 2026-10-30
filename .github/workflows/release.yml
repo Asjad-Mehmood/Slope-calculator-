@@ -1,0 +1,102 @@
+name: Build and Release
+
+# Runs when you push a tag such as v1.0.1 (publishing a GitHub release with a new tag does this).
+#
+# This repository is public, so its releases are too: every installed copy reads latest.json and
+# the installer from this repository's latest release, and www.exceltokml.com/slope-calculation
+# links to the installer there. The release description comes from docs/releases/<tag>.md.
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+env:
+  FLUTTER_VERSION: '3.47.7'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version from tag
+        shell: pwsh
+        run: |
+          $ver = "${{ github.ref_name }}".TrimStart('v')
+          if ($ver -notmatch '^\d+\.\d+\.\d+$') { throw "A release tag is v and three numbers, for example v1.0.1. Got: ${{ github.ref_name }}" }
+          "VERSION=$ver" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Tests
+        run: |
+          flutter pub get
+          flutter test
+
+      - name: Build the program
+        shell: pwsh
+        run: |
+          flutter build windows --release --build-name=$env:VERSION --build-number=${{ github.run_number }} --dart-define=APP_VERSION=$env:VERSION
+          # the Microsoft C++ runtime goes next to the program, so nothing else has to be installed
+          foreach ($dll in 'msvcp140.dll','vcruntime140.dll','vcruntime140_1.dll') {
+            Copy-Item "C:\Windows\System32\$dll" build\windows\x64\runner\Release\
+          }
+
+      - name: Build the installer
+        shell: pwsh
+        working-directory: installer
+        run: |
+          if (-not (Test-Path "C:\Program Files (x86)\NSIS\makensis.exe")) { choco install nsis -y --no-progress }
+          & "C:\Program Files (x86)\NSIS\makensis.exe" "/DVERSION=$env:VERSION" installer.nsi
+          if (-not (Test-Path SlopeCalculator-Setup.exe)) { throw "The installer was not made" }
+
+      - name: Write latest.json
+        shell: pwsh
+        working-directory: installer
+        run: |
+          $h = (Get-FileHash SlopeCalculator-Setup.exe -Algorithm SHA256).Hash.ToLower()
+          '{"version":"' + $env:VERSION + '","sha256":"' + $h + '"}' | Set-Content latest.json -Encoding ascii
+
+      - name: Find the release notes
+        id: notes
+        shell: bash
+        run: |
+          f="docs/releases/${GITHUB_REF_NAME}.md"
+          if [ -f "$f" ]; then echo "path=$f" >> "$GITHUB_OUTPUT"; else echo "path=" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Slope Calculator ${{ github.ref_name }}
+          body_path: ${{ steps.notes.outputs.path }}
+          make_latest: true
+          files: |
+            installer/SlopeCalculator-Setup.exe
+            installer/latest.json
+
+  # Download the published release the way installed copies do: latest.json, then the installer,
+  # checked against its SHA-256. A failure here means installed copies cannot update.
+  verify:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download and verify the release
+        run: |
+          base="https://github.com/${GITHUB_REPOSITORY}/releases/latest/download"
+          want="${GITHUB_REF_NAME#v}"
+          for i in 1 2 3 4 5; do
+            if curl -fsSL "$base/latest.json" -o latest.json && grep -q "\"version\":\"$want\"" latest.json; then
+              sha=$(sed -E 's/.*"sha256":"([0-9a-f]{64})".*/\1/' latest.json)
+              curl -fsSL "$base/SlopeCalculator-Setup.exe" -o setup.exe
+              echo "$sha  setup.exe" | sha256sum -c - && exit 0
+            fi
+            echo "Not available yet; trying again in 30 s"; sleep 30
+          done
+          exit 1

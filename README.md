@@ -77,6 +77,19 @@ windows/ web/ android/ ios/   platform projects
 maskable icons and iPhone. Every icon file (`windows/runner/resources/app_icon.ico`, `web/icons/`,
 `web/favicon.png`, Android `mipmap-*`, iOS `AppIcon.appiconset`) is rendered from those two.
 
+### Making a release
+
+1. Merge the change into `main` and write the notes in `docs/releases/<tag>.md`.
+2. Publish a GitHub release on `main` with a new tag, for example `v1.0.1` (v and three numbers).
+3. The **Build and Release** workflow tests, builds `SlopeCalculator.exe` with the version
+   stamped in, makes `SlopeCalculator-Setup.exe` and `latest.json`, attaches them to the release
+   and then downloads them back the way installed copies do. If that last job fails, installed
+   copies can't update: fix it first.
+
+Installed copies read `latest.json` from
+`https://github.com/Asjad-Mehmood/slope-calculator-/releases/latest/download/`, so this repository
+and its releases must stay public under that name.
+
 ### Version
 
 `pubspec.yaml` holds the version (`1.0.0+1`). A release stamps it into the app with

@@ -2,6 +2,19 @@
 
 ## 1.0.0 (in development)
 
+### Phase 8: Windows program and GitHub build
+- Installer `SlopeCalculator-Setup.exe` (NSIS): installs for the user without administrator rights
+  to `%LOCALAPPDATA%\SlopeCalculator`, with Start menu and desktop shortcuts and an entry in
+  Settings → Apps to uninstall. The Microsoft C++ runtime is included, so nothing else is needed.
+- Self-update: a few seconds after opening, the program reads `latest.json` from the newest GitHub
+  release; when a newer version is out it asks, downloads the installer, checks its SHA-256,
+  installs silently and opens again.
+- One window at a time: opening it again brings the open window forward.
+- Build and Release workflow on a version tag (`v1.0.0`): tests, builds, makes the installer and
+  `latest.json`, publishes the release with `docs/releases/<tag>.md`, then downloads it back and
+  checks it the way installed copies do. Every push builds a test installer under Actions →
+  Artifacts.
+
 ### Phase 6: Excel to KML account
 - Sign in with the Excel to KML account, or create one: the website emails a 6-digit code to
   confirm the email, as on the website and in the other apps. Forgot the password sends the

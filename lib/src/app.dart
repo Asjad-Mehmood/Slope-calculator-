@@ -20,6 +20,7 @@ import 'state/store.dart';
 import 'ui/app_shell.dart';
 import 'ui/settings.dart';
 import 'ui/theme.dart';
+import 'update/updater.dart';
 
 /// The app's frame. Light and dark follow the computer until the user picks one.
 class SlopeCalculatorApp extends StatefulWidget {
@@ -140,6 +141,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _page = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // the Windows program checks for a newer version once it is open
+    WidgetsBinding.instance.addPostFrameCallback((_) => checkForUpdate(context));
+  }
+
   late final _exporter = Exporter(
     calculation: widget.calculation,
     plate: widget.plate,
