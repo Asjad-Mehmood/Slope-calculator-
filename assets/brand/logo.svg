@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="0.62" cy="0.18" r="0.95">
+      <stop offset="0" stop-color="#17386B"/>
+      <stop offset="1" stop-color="#0A1A36"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#E9B949"/>
+      <stop offset="0.55" stop-color="#F7D774"/>
+      <stop offset="1" stop-color="#D9A233"/>
+    </linearGradient>
+    <linearGradient id="wedge" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#E9B949" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#E9B949" stop-opacity="0.10"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- the slope: rise over run -->
+  <path d="M104 384 L408 152 L408 384 Z" fill="url(#wedge)"/>
+  <path d="M408 152 V384 H104" fill="none" stroke="#E9B949" stroke-opacity="0.55" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- right-angle mark -->
+  <path d="M372 384 V348 H408" fill="none" stroke="#E9B949" stroke-opacity="0.55" stroke-width="10" stroke-linejoin="round"/>
+  <!-- the graded line with stations -->
+  <line x1="104" y1="384" x2="408" y2="152" stroke="url(#gold)" stroke-width="30" stroke-linecap="round"/>
+  <circle cx="104" cy="384" r="30" fill="#0A1A36" stroke="#F7D774" stroke-width="16"/>
+  <circle cx="256" cy="268" r="19" fill="#0A1A36" stroke="#F7D774" stroke-width="12"/>
+  <circle cx="408" cy="152" r="30" fill="#0A1A36" stroke="#F7D774" stroke-width="16"/>
+</svg>

@@ -1,0 +1,41 @@
+SURVEYX DIGITAL - SLOPE CALCULATION APPLICATION V28 (FINAL)
+Front page (V26) + soft working screen (V27) + Digital Auto Level Simulator (new)
+
+START HERE
+1. Open Slope_Calculation_Application_V28.html in Chrome or Microsoft Edge (index.html is the same file).
+2. Select "Open application". Enter Y1, Y2, X1, X2 and the chainage interval in step 1. Results appear at the top right.
+
+OPTIONAL TOOLS (collapsed until you open them; use the quick buttons under the toolbar)
+- Project plate: "Open Project Plate" for report header details and the professional Excel report.
+- 4 Crossfall / slope from centreline.
+- 5 DIGITAL AUTO LEVEL SIMULATOR (new) - see below.
+- 6 Optical level simulator (training animation, unchanged).
+- 7 Dashboard of saved calculations.
+
+DIGITAL AUTO LEVEL SIMULATOR (step 5)
+- Uses your slope line (Y1, Y2, X1, X2, interval) as the ground.
+- A digital level and barcode staff run along the line automatically: backsight (BS), intermediate sights (IS),
+  change points (CP) and foresight (FS), using the HI method.
+- LCD panel shows the rod reading to 0.1 mm, distance, HI and RL for each reading.
+- Level book table: BS, IS, FS, HI, RL, slope RL, difference in mm, notes. Download it as CSV for Excel.
+- Final check: arithmetic check (sum BS - sum FS = last RL - first RL) and closing error against design Y2
+  compared with the allowable 12 sqrt(K) mm.
+- Options: max sight distance, reading noise (mm), collimation error (mm per 100 m), speed.
+  Buttons: Start / Pause, Step, Reset, New run (new random noise).
+- It is a training and checking simulator. It does not connect to or reproduce any specific instrument model.
+
+OTHER IMPROVEMENTS IN V28
+- Quick buttons: Calculator, Levels, Crossfall, Digital Level, Optical Sim, Dashboard; "Optional" tags on optional tools.
+- Soft light and dark themes, adjustable text size, Enter-to-next-field, remembered inputs, Copy summary.
+
+PACKAGE CONTENTS
+- Slope_Calculation_Application_V28.html and index.html: main app
+- Windows_EXE_Source, Mobile_Android_iPhone_Source, PWA_Installable_Web_App: wrapper sources using the same page
+- Slope_Calculation_Professional_Excel_Template.xlsx and the V24 manual PDF
+- Slope_Calculation_Application_V24.html: older version kept for reference
+
+IMPORTANT
+- This is a browser app/source package. It is not a prebuilt Windows EXE, Android APK, or iOS IPA.
+- Native builds must be compiled and signed using the appropriate Windows/Android/iOS toolchains.
+- Website account authentication and cloud services need their own server-side configuration.
+- Verify calculations against an approved engineering example before using outputs for construction decisions.

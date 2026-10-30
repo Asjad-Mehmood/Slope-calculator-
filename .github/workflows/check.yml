@@ -1,0 +1,66 @@
+name: Check
+
+# On every push and pull request: the code is formatted, the lints pass, every test passes, and
+# the web app and the Windows program still build. Nothing is published. The Windows build is
+# kept for 14 days under the run's Artifacts, to try before a release.
+on:
+  push:
+    branches-ignore:
+      - 'dependabot/**'
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: '3.47.7'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Formatted
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Lints
+        run: flutter analyze
+
+      - name: Tests
+        run: flutter test
+
+      - name: Build the web app
+        run: flutter build web --release --base-href /slope-calculation/app/
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Build the Windows program
+        run: |
+          flutter pub get
+          flutter build windows --release
+          if (-not (Test-Path build\windows\x64\runner\Release\SlopeCalculator.exe)) { throw "SlopeCalculator.exe was not built" }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SlopeCalculator-windows
+          path: build/windows/x64/runner/Release/
+          retention-days: 14
