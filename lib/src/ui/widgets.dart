@@ -37,7 +37,7 @@ class _SectionCardState extends State<SectionCard> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final head = Row(
+    final title = Row(
       children: [
         if (widget.step != null) ...[StepBadge(widget.step!), const SizedBox(width: 12)],
         Expanded(
@@ -47,11 +47,27 @@ class _SectionCardState extends State<SectionCard> {
           ),
         ),
         if (widget.optional) ...[const Tag('Optional'), const SizedBox(width: 6)],
-        ?widget.trailing,
         if (widget.optional)
           Icon(_open ? Icons.expand_less_rounded : Icons.expand_more_rounded, color: c.muted, semanticLabel: null),
       ],
     );
+    // the extra on the right goes under the title when the card is narrow
+    final head = widget.trailing == null
+        ? title
+        : LayoutBuilder(
+            builder: (context, box) => box.maxWidth < 560
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [title, const SizedBox(height: 10), widget.trailing!],
+                  )
+                : Row(
+                    children: [
+                      Expanded(child: title),
+                      const SizedBox(width: 12),
+                      widget.trailing!,
+                    ],
+                  ),
+          );
     return Card(
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -458,31 +474,36 @@ class ResultTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: c.line),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label.toUpperCase(),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: c.muted, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.9),
-          ),
-          const SizedBox(height: 6),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              value,
-              style: TextStyle(
-                color: valueColor ?? c.ink,
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                fontFeatures: tabular,
+      // in a tight grid cell the label and value shrink a little rather than overflow
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: c.muted, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.9),
+            ),
+            const SizedBox(height: 6),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                style: TextStyle(
+                  color: valueColor ?? c.ink,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: tabular,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

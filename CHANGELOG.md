@@ -2,6 +2,20 @@
 
 ## 1.0.0 (in development)
 
+### Phase 4: optional tools
+- Crossfall: centreline level, slope % and offset on each side, falling or rising away; results,
+  the working written out, and a cross-section drawing. Remembered on the device.
+- Digital level run along the calculator's line: a side view with the level, the barcode staff and
+  the line of sight; the instrument's display (reading to 0.1 mm, distance, RL); Start / Pause,
+  Step, Reset and New run; the level book filling in reading by reading, by Height of Instrument
+  or Rise & Fall, with design levels and differences; and the checks at the end (ΣBS − ΣFS, HI or
+  Rise & Fall check, closing error against C√K from Settings). Options: max sight, reading noise,
+  collimation error, speed.
+- Optical level trainer: the view through the telescope onto an E-pattern staff with the cross and
+  stadia hairs. Watch mode moves the staff and shows the reading; Practise mode asks for the
+  reading and marks it (within 2 mm), with a score.
+- Animations stop when their page isn't on screen (V28's ran all the time).
+
 ### Phase 3: main screens
 - The app remembers, on this device, the last inputs, the settings and the project plate, and
   opens where it was left (Windows: the user's AppData; web: the browser's storage).

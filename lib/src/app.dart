@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'brand.dart';
 import 'screens/calculator_screen.dart';
 import 'screens/coming_soon_screen.dart';
+import 'screens/crossfall_screen.dart';
+import 'screens/level_screen.dart';
 import 'screens/project_plate_screen.dart';
 import 'screens/settings_screen.dart';
 import 'state/calculation.dart';
@@ -51,7 +53,7 @@ class _SlopeCalculatorAppState extends State<SlopeCalculatorApp> {
           data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(_settings.textScale)),
           child: child!,
         ),
-        home: HomeScreen(settings: _settings, calculation: _calculation, plate: _plate),
+        home: HomeScreen(settings: _settings, calculation: _calculation, plate: _plate, store: _store),
       ),
     );
   }
@@ -86,8 +88,15 @@ const destinations = [
 ];
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.settings, required this.calculation, required this.plate});
+  const HomeScreen({
+    super.key,
+    required this.settings,
+    required this.calculation,
+    required this.plate,
+    required this.store,
+  });
   final AppSettings settings;
+  final Store store;
   final Calculation calculation;
   final ProjectPlate plate;
 
@@ -102,16 +111,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final pages = <Widget>[
       CalculatorScreen(calculation: widget.calculation),
-      const ComingSoonScreen(
-        icon: Icons.add_road_outlined,
-        phase: 4,
-        text: 'Crossfall from the centreline, with a cross-section drawing.',
-      ),
-      const ComingSoonScreen(
-        icon: Icons.straighten_outlined,
-        phase: 4,
-        text: 'The digital level simulator: a level run along your slope, booked by HI or Rise & Fall and checked.',
-      ),
+      CrossfallScreen(store: widget.store),
+      LevelScreen(calculation: widget.calculation, settings: widget.settings, store: widget.store),
       const ComingSoonScreen(
         icon: Icons.folder_open_outlined,
         phase: 6,
@@ -125,7 +126,13 @@ class _HomeScreenState extends State<HomeScreen> {
       onSelect: (i) => setState(() => _page = i),
       settings: widget.settings,
       headerActions: [if (_page == 0) ProjectPlateButton(plate: widget.plate)],
-      child: IndexedStack(index: _page, children: pages),
+      child: IndexedStack(
+        index: _page,
+        children: [
+          // only the page on screen runs its animations
+          for (var i = 0; i < pages.length; i++) TickerMode(enabled: i == _page, child: pages[i]),
+        ],
+      ),
     );
   }
 }

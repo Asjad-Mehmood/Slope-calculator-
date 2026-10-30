@@ -23,11 +23,12 @@ Calculator with remembered inputs, results, profile with a probe, chainage level
 chainage", project plate, settings (theme, text size, stations, decimals, interval, allowable C).
 The calculator is the start screen; recent calculations come with accounts in phase 6.
 
-## 🔜 Phase 4: optional tools
-Crossfall with a cross-section drawing; digital level simulator; optical level trainer (runs only
-while open); practice mode.
+## ✅ Phase 4: optional tools
+Crossfall with a cross-section drawing; digital level run (step or play, instrument display, level
+book by HI or Rise & Fall, checks and closing error); optical level trainer with an E-pattern
+staff, watch and practise modes. Animations run only while their page is on screen.
 
-## ⬜ Phase 5: reports (offline)
+## 🔜 Phase 5: reports (offline)
 Excel (Project Plate, Summary, Chainage Levels, Crossfall, Level Book), CSV, PDF with sign-off
 boxes, print, optional KML.
 
