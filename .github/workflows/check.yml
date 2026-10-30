@@ -1,8 +1,8 @@
 name: Check
 
 # On every push and pull request: the code is formatted, the lints pass, every test passes (the
-# calculations also in a browser), the worked examples match the code, and
-# the web app, the Windows program and its installer still build. Nothing is published. The test
+# calculations also in a browser), the worked examples match the code, the web app builds and
+# works in Chromium, Firefox and WebKit, and the Windows program and its installer still build. Nothing is published. The test
 # installer is kept for 14 days under the run's Artifacts, to try before a release.
 on:
   push:
@@ -51,6 +51,32 @@ jobs:
       - name: Build the web app (as the website serves it, with sw.js for offline use)
         run: tool/web_build.sh
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+
+      - name: Browsers for the web app tests
+        working-directory: e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium firefox webkit
+
+      - name: The web app in Chromium, Firefox and WebKit (Safari), wide and phone-sized
+        working-directory: e2e
+        run: npx playwright test
+
+      - name: Keep the browser test report when something fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          retention-days: 14
+
   windows:
     runs-on: windows-latest
     steps:
@@ -84,6 +110,20 @@ jobs:
           if (-not (Test-Path "C:\Program Files (x86)\NSIS\makensis.exe")) { choco install nsis -y --no-progress }
           & "C:\Program Files (x86)\NSIS\makensis.exe" /DVERSION=0.0.0 installer.nsi
           if (-not (Test-Path SlopeCalculator-Setup.exe)) { throw "The installer was not made" }
+
+      # install it, open it, a second start, uninstall: on a machine with no graphics card
+      - name: Install, open and uninstall the program
+        shell: pwsh
+        run: pwsh tool/windows_smoke.ps1 installer\SlopeCalculator-Setup.exe windows-smoke.png
+
+      - name: Keep the screenshot of the program opening
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-screenshot
+          path: windows-smoke.png
+          if-no-files-found: ignore
+          retention-days: 14
 
       # to try before a release: Actions -> this run -> Artifacts. It doesn't look for updates.
       - uses: actions/upload-artifact@v4
