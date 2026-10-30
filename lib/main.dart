@@ -6,5 +6,5 @@ import 'src/state/store.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final store = await Store.open();
-  runApp(SlopeCalculatorApp(store: store));
+  runApp(SlopeCalculatorApp(store: store, checkForUpdates: true));
 }

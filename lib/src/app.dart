@@ -24,7 +24,11 @@ import 'update/updater.dart';
 
 /// The app's frame. Light and dark follow the computer until the user picks one.
 class SlopeCalculatorApp extends StatefulWidget {
-  const SlopeCalculatorApp({super.key, this.store, this.api});
+  const SlopeCalculatorApp({super.key, this.store, this.api, this.checkForUpdates = false});
+
+  /// Look for a newer version once open (the Windows program). Only main() turns it on, so tests
+  /// never leave the check's timer and download running.
+  final bool checkForUpdates;
 
   /// The website connection; tests pass one that answers from memory
   final Api? api;
@@ -84,6 +88,7 @@ class _SlopeCalculatorAppState extends State<SlopeCalculatorApp> {
           store: _store,
           levelRun: _levelRun,
           account: _account,
+          checkForUpdates: widget.checkForUpdates,
         ),
       ),
     );
@@ -127,8 +132,10 @@ class HomeScreen extends StatefulWidget {
     required this.store,
     required this.levelRun,
     required this.account,
+    this.checkForUpdates = false,
   });
   final Account account;
+  final bool checkForUpdates;
   final AppSettings settings;
   final LevelRunState levelRun;
   final Store store;
@@ -146,7 +153,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     // the Windows program checks for a newer version once it is open
-    WidgetsBinding.instance.addPostFrameCallback((_) => checkForUpdate(context));
+    if (widget.checkForUpdates) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => checkForUpdate(context));
+    }
   }
 
   late final _exporter = Exporter(

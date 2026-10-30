@@ -62,10 +62,15 @@ jobs:
           channel: stable
           cache: true
 
+      # the tests on Windows too: some code only runs there (the self-update check)
+      - name: Tests on Windows
+        run: |
+          flutter pub get
+          flutter test
+
       - name: Build the Windows program
         shell: pwsh
         run: |
-          flutter pub get
           flutter build windows --release --dart-define=NO_UPDATE_CHECK=true
           if (-not (Test-Path build\windows\x64\runner\Release\SlopeCalculator.exe)) { throw "SlopeCalculator.exe was not built" }
           foreach ($dll in 'msvcp140.dll','vcruntime140.dll','vcruntime140_1.dll') {
