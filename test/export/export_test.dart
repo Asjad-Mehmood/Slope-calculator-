@@ -12,6 +12,8 @@ import 'package:slope_calculator/src/export/report_data.dart';
 import 'package:slope_calculator/src/state/level_run_state.dart';
 import 'package:slope_calculator/src/state/store.dart';
 
+import '../signed_in.dart';
+
 SlopeResult v28() => calculateSlope(
   const SlopeInput(startLevel: 102.5, endLevel: 98.75, startChainage: 1000, endChainage: 1250, interval: 20),
 );
@@ -168,7 +170,7 @@ void main() {
     tester.view.physicalSize = const Size(1440, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(SlopeCalculatorApp(store: Store.memory()));
+    await tester.pumpWidget(SlopeCalculatorApp(store: signedInStore()));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Export'));
     await tester.pumpAndSettle();

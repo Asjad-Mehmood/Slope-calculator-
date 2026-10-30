@@ -84,7 +84,13 @@ class Account extends ChangeNotifier {
     api.token = j?['token'] as String?;
     _user = AccountUser.from(j?['user']);
     if (_user != null) _showKept();
+    // signed in on this device before: the app opens at once (offline too) while the website is
+    // asked. The web app may be signed in through the website: ask before showing the sign-in.
+    checking = _user == null && (api.token != null || api.platform == 'web');
   }
+
+  /// Still asking the website whether there is a sign-in (only when nobody is remembered here)
+  bool checking = false;
 
   /// The list from the last refresh, kept on this device, with what is waiting
   void _showKept() {
@@ -121,6 +127,7 @@ class Account extends ChangeNotifier {
 
   /// On start: is the remembered (or, on the web, the website's) sign-in still good?
   Future<void> restore() async {
+    if (!checking && _user == null) return;
     try {
       final j = await api.call('GET', '/api/auth/me');
       final user = AccountUser.from(j['user']);
@@ -140,6 +147,11 @@ class Account extends ChangeNotifier {
         _forget();
       } else if (e.status == null && signedIn) {
         offline = true;
+        notifyListeners();
+      }
+    } finally {
+      if (checking) {
+        checking = false;
         notifyListeners();
       }
     }

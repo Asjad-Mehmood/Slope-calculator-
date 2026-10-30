@@ -16,6 +16,9 @@ class FakeSite {
   bool confirmed = false;
   bool approved = false;
 
+  /// signed in on the website in this browser (the web app's cookie)
+  bool webSession = false;
+
   /// false: every request fails as if the computer had no connection
   bool online = true;
 
@@ -29,7 +32,7 @@ class FakeSite {
     final body = r.body.isEmpty ? <String, Object?>{} : jsonDecode(r.body) as Map<String, Object?>;
     http.Response json(Object o, [int status = 200]) =>
         http.Response(jsonEncode(o), status, headers: {'content-type': 'application/json'});
-    final signedIn = r.headers['Authorization'] == 'Bearer tok-1';
+    final signedIn = r.headers['Authorization'] == 'Bearer tok-1' || webSession;
     switch ((r.method, r.url.path)) {
       case ('GET', '/api/auth/me'):
         return json({'user': signedIn ? user : null});
@@ -83,7 +86,7 @@ class FakeSite {
     return json({'error': 'Not found'}, 404);
   });
 
-  Api api() => Api(base: 'https://site.test', client: client);
+  Api api({String platform = 'windows'}) => Api(base: 'https://site.test', client: client, platform: platform);
 }
 
 void main() {
@@ -202,14 +205,15 @@ void main() {
     final site = FakeSite()..confirmed = true;
     await tester.pumpWidget(SlopeCalculatorApp(store: Store.memory(), api: site.api()));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Sign in').first);
-    await tester.pumpAndSettle();
+    // the app opens on the sign-in
     expect(find.text('YOUR EXCEL TO KML ACCOUNT'), findsOneWidget);
     await tester.enterText(find.widgetWithText(TextField, 'Email'), 'sam@site.com');
     await tester.enterText(find.widgetWithText(TextField, 'Password'), 'right');
     await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
     await tester.pumpAndSettle();
     expect(find.text('Sam Surveyor'), findsWidgets);
+    await tester.tap(find.text('Sam Surveyor').first);
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Save the current calculation'));
     await tester.pumpAndSettle();
@@ -359,5 +363,90 @@ void main() {
     expect(find.text('WAITING TO SEND'), findsNothing);
     expect(find.textContaining('Offline:'), findsNothing);
     expect(site.jobs.values.single['name'], 'Site visit');
+  });
+
+  group('signed in to use the app', () {
+    Future<void> start(WidgetTester tester, Store store, Api api) async {
+      tester.view.physicalSize = const Size(1440, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(SlopeCalculatorApp(store: store, api: api));
+      await tester.pumpAndSettle();
+    }
+
+    final calculator = find.text('ENTER YOUR DATA');
+    final signIn = find.text('YOUR EXCEL TO KML ACCOUNT');
+
+    testWidgets('Windows: the sign-in first, then the app; signing out comes back to it', (tester) async {
+      final site = FakeSite()..confirmed = true;
+      await start(tester, Store.memory(), site.api());
+      expect(signIn, findsOneWidget);
+      expect(calculator, findsNothing);
+      expect(find.textContaining('Sign in with your free Excel to KML account'), findsOneWidget);
+
+      await tester.enterText(find.widgetWithText(TextField, 'Email'), 'sam@site.com');
+      await tester.enterText(find.widgetWithText(TextField, 'Password'), 'right');
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+      await tester.pumpAndSettle();
+      expect(calculator, findsOneWidget);
+
+      await tester.tap(find.text('Sam Surveyor').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sign out'));
+      await tester.pumpAndSettle();
+      expect(signIn, findsOneWidget);
+      expect(calculator, findsNothing);
+    });
+
+    testWidgets('signed in before: straight to the app, offline too', (tester) async {
+      final site = FakeSite()
+        ..confirmed = true
+        ..online = false;
+      final store = Store.memory()..writeJson('account', {'token': 'tok-1', 'user': FakeSite.user});
+      await start(tester, store, site.api());
+      expect(calculator, findsOneWidget);
+    });
+
+    testWidgets('a sign-in the website no longer accepts goes back to the sign-in', (tester) async {
+      final site = FakeSite()..confirmed = true;
+      final store = Store.memory()..writeJson('account', {'token': 'old', 'user': FakeSite.user});
+      await start(tester, store, site.api());
+      expect(signIn, findsOneWidget);
+    });
+
+    testWidgets('web app: signed in on the website opens the app, after a moment of checking', (tester) async {
+      final site = FakeSite()
+        ..confirmed = true
+        ..webSession = true;
+      tester.view.physicalSize = const Size(1440, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        SlopeCalculatorApp(
+          store: Store.memory(),
+          api: site.api(platform: 'web'),
+        ),
+      );
+      expect(find.text('Checking your sign-in…'), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(calculator, findsOneWidget);
+    });
+
+    testWidgets('web app: not signed in on the website shows the sign-in', (tester) async {
+      final site = FakeSite()..confirmed = true;
+      await start(tester, Store.memory(), site.api(platform: 'web'));
+      expect(signIn, findsOneWidget);
+    });
+
+    testWidgets('never signed in and offline: the sign-in, which says it cannot reach the site', (tester) async {
+      final site = FakeSite()..online = false;
+      await start(tester, Store.memory(), site.api());
+      await tester.enterText(find.widgetWithText(TextField, 'Email'), 'sam@site.com');
+      await tester.enterText(find.widgetWithText(TextField, 'Password'), 'right');
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Could not reach exceltokml.com'), findsOneWidget);
+      expect(calculator, findsNothing);
+    });
   });
 }
