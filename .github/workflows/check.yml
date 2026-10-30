@@ -2,8 +2,8 @@ name: Check
 
 # On every push and pull request: the code is formatted, the lints pass, every test passes (the
 # calculations also in a browser), the worked examples match the code, and
-# the web app and the Windows program still build. Nothing is published. The Windows build is
-# kept for 14 days under the run's Artifacts, to try before a release.
+# the web app, the Windows program and its installer still build. Nothing is published. The test
+# installer is kept for 14 days under the run's Artifacts, to try before a release.
 on:
   push:
     branches-ignore:
@@ -63,13 +63,26 @@ jobs:
           cache: true
 
       - name: Build the Windows program
+        shell: pwsh
         run: |
           flutter pub get
-          flutter build windows --release
+          flutter build windows --release --dart-define=NO_UPDATE_CHECK=true
           if (-not (Test-Path build\windows\x64\runner\Release\SlopeCalculator.exe)) { throw "SlopeCalculator.exe was not built" }
+          foreach ($dll in 'msvcp140.dll','vcruntime140.dll','vcruntime140_1.dll') {
+            Copy-Item "C:\Windows\System32\$dll" build\windows\x64\runner\Release\
+          }
 
+      - name: Build the installer
+        shell: pwsh
+        working-directory: installer
+        run: |
+          if (-not (Test-Path "C:\Program Files (x86)\NSIS\makensis.exe")) { choco install nsis -y --no-progress }
+          & "C:\Program Files (x86)\NSIS\makensis.exe" /DVERSION=0.0.0 installer.nsi
+          if (-not (Test-Path SlopeCalculator-Setup.exe)) { throw "The installer was not made" }
+
+      # to try before a release: Actions -> this run -> Artifacts. It doesn't look for updates.
       - uses: actions/upload-artifact@v4
         with:
-          name: SlopeCalculator-windows
-          path: build/windows/x64/runner/Release/
+          name: SlopeCalculator-Setup-test
+          path: installer/SlopeCalculator-Setup.exe
           retention-days: 14
