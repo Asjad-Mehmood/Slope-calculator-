@@ -375,8 +375,11 @@ class _NameDialogState extends State<_NameDialog> {
 
 /// Sign in, create an account, or sign in through the browser.
 class SignInCard extends StatefulWidget {
-  const SignInCard({super.key, required this.account});
+  const SignInCard({super.key, required this.account, this.intro});
   final Account account;
+
+  /// The line above the form
+  final String? intro;
 
   @override
   State<SignInCard> createState() => _SignInCardState();
@@ -611,8 +614,9 @@ class _SignInCardState extends State<SignInCard> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Sign in to keep calculations in your account and open them on any device. The same '
-              'account as Excel to KML and Traverse & Level. The calculator works without signing in.',
+              widget.intro ??
+                  'Sign in to keep calculations in your account and open them on any device. The same '
+                      'account as Excel to KML and Traverse & Level.',
               style: TextStyle(color: c.muted, height: 1.45),
             ),
             const SizedBox(height: 16),

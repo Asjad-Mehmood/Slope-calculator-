@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.3
+
+- Sign in first: on Windows and on the web the app opens on the sign-in (email and password,
+  create an account with the emailed code, or the browser for Google) and is used signed in. The
+  account is remembered on the device, so later starts open straight away, offline too; a sign-in
+  the website no longer accepts, or signing out, comes back to it. The web app opens directly when
+  the browser is signed in on exceltokml.com ("Checking your sign-in…" meanwhile).
+- The Windows program still looks for updates while the sign-in is showing.
+- The web app on a copy of the website running on this computer uses that copy's API.
+
 ## 1.0.0 (in development)
 
 ### Phase 7: web version

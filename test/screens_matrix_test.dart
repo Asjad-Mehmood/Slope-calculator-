@@ -4,7 +4,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:slope_calculator/src/app.dart';
-import 'package:slope_calculator/src/state/store.dart';
+
+import 'signed_in.dart';
 
 const sizes = {
   'small phone 360×640': Size(360, 640),
@@ -45,7 +46,7 @@ void main() {
           addTearDown(tester.view.reset);
           addTearDown(tester.platformDispatcher.clearAllTestValues);
 
-          await tester.pumpWidget(SlopeCalculatorApp(store: Store.memory()));
+          await tester.pumpWidget(SlopeCalculatorApp(store: signedInStore()));
           await tester.pumpAndSettle();
           for (final page in pages) {
             await open(tester, page);
