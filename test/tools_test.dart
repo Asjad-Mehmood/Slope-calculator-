@@ -109,6 +109,8 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.tap(find.text('Level').first);
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Step'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Step'));
     await tester.pump();
     expect(tester.takeException(), isNull);

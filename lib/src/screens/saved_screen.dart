@@ -90,7 +90,7 @@ class _SavedListState extends State<_SavedList> {
     if (name == null || name.trim().isEmpty) return;
     setState(() => _saving = true);
     try {
-      await widget.account.save(
+      final sent = await widget.account.save(
         name: name.trim(),
         data: {'version': 1, 'calculation': widget.calculation.toJson(), 'plate': widget.plate.values},
         summary: {
@@ -102,7 +102,11 @@ class _SavedListState extends State<_SavedList> {
           'stations': r.stations.length,
         },
       );
-      _toast('Saved to your account: ${name.trim()}');
+      _toast(
+        sent
+            ? 'Saved to your account: ${name.trim()}'
+            : 'No connection. ${name.trim()} is kept on this device and sent to your account when you are back online.',
+      );
     } on ApiError catch (e) {
       _toast(e.message);
     } finally {
@@ -138,8 +142,8 @@ class _SavedListState extends State<_SavedList> {
     );
     if (sure != true) return;
     try {
-      await widget.account.delete(s.id);
-      _toast('Deleted: ${s.name}');
+      final sent = await widget.account.delete(s.id);
+      _toast(sent ? 'Deleted: ${s.name}' : 'Deleted here. Your account forgets it when you are back online.');
     } on ApiError catch (e) {
       _toast(e.message);
     }
@@ -209,6 +213,7 @@ class _SavedListState extends State<_SavedList> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (a.problem != null) ...[Notice(a.problem!, kind: NoticeKind.problem), const SizedBox(height: 12)],
+              if (a.offline || a.waiting > 0) ...[_OfflineNote(account: a), const SizedBox(height: 12)],
               if (a.loading && a.saved.isEmpty)
                 const Padding(
                   padding: EdgeInsets.all(24),
@@ -226,6 +231,34 @@ class _SavedListState extends State<_SavedList> {
                 ],
             ],
           ),
+        ),
+      ],
+    );
+  }
+}
+
+/// No connection, or changes still to send: says so, with a button to try again
+class _OfflineNote extends StatelessWidget {
+  const _OfflineNote({required this.account});
+  final Account account;
+
+  @override
+  Widget build(BuildContext context) {
+    final n = account.waiting;
+    final waiting = n == 0 ? '' : ' $n ${n == 1 ? 'change is' : 'changes are'} waiting to be sent.';
+    final text = account.offline
+        ? 'Offline: this is the list from the last time the app reached exceltokml.com.$waiting'
+        : '$n ${n == 1 ? 'change is' : 'changes are'} waiting to be sent to your account.';
+    return Wrap(
+      spacing: 12,
+      runSpacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Notice(text, kind: NoticeKind.warning),
+        OutlinedButton.icon(
+          onPressed: account.loading ? null : account.refresh,
+          icon: const Icon(Icons.sync_rounded, size: 19),
+          label: Text(n > 0 ? 'Send now' : 'Try again'),
         ),
       ],
     );
@@ -269,9 +302,17 @@ class _SavedTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      saved.name,
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: c.ink),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          saved.name,
+                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: c.ink),
+                        ),
+                        if (saved.waiting) const Tag('Waiting to send', icon: Icons.cloud_off_rounded),
+                      ],
                     ),
                     const SizedBox(height: 2),
                     Text(

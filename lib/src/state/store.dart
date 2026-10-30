@@ -28,7 +28,8 @@ class Store {
 
   void write(String key, String value) {
     _memory[key] = value;
-    _prefs?.setString('$_prefix$key', value);
+    // a full browser storage refuses: kept for this session only
+    _prefs?.setString('$_prefix$key', value).catchError((_) => false);
   }
 
   void remove(String key) {
