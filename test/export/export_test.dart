@@ -50,6 +50,19 @@ void main() {
   group('Excel report', () {
     final book = Excel.decodeBytes(buildExcelReport(data()));
 
+    test('numbers are stored clean, not with binary arithmetic noise', () {
+      for (final sheet in book.tables.values) {
+        for (final row in sheet.rows) {
+          for (final cell in row) {
+            final v = cell?.value;
+            if (v is DoubleCellValue) {
+              expect('${v.value}'.length, lessThan(16), reason: '${sheet.sheetName} ${cell!.cellIndex}: ${v.value}');
+            }
+          }
+        }
+      }
+    });
+
     test('has the template sheets plus the level book', () {
       expect(book.tables.keys, [
         'Project Plate',

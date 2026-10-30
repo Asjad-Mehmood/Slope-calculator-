@@ -457,13 +457,17 @@ class _SignInCardState extends State<SignInCard> {
     Widget field(TextEditingController ctl, String label, {bool secret = false, TextInputType? type, String? hint}) =>
         Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: TextField(
-            controller: ctl,
-            obscureText: secret,
-            keyboardType: type,
-            autocorrect: false,
-            enableSuggestions: !secret,
-            decoration: InputDecoration(labelText: label, hintText: hint),
+          // its own node, so a screen reader names it by its label alone, not with the card's text
+          child: Semantics(
+            container: true,
+            child: TextField(
+              controller: ctl,
+              obscureText: secret,
+              keyboardType: type,
+              autocorrect: false,
+              enableSuggestions: !secret,
+              decoration: InputDecoration(labelText: label, hintText: hint),
+            ),
           ),
         );
 
