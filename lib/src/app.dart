@@ -13,6 +13,7 @@ import 'screens/level_screen.dart';
 import 'screens/project_plate_screen.dart';
 import 'screens/saved_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/sign_in_screen.dart';
 import 'state/calculation.dart';
 import 'state/level_run_state.dart';
 import 'state/project_plate.dart';
@@ -90,14 +91,19 @@ class _SlopeCalculatorAppState extends State<SlopeCalculatorApp> {
           data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(_settings.textScale)),
           child: child!,
         ),
-        home: HomeScreen(
-          settings: _settings,
-          calculation: _calculation,
-          plate: _plate,
-          store: _store,
-          levelRun: _levelRun,
+        home: _SignedInOnly(
           account: _account,
+          settings: _settings,
           checkForUpdates: widget.checkForUpdates,
+          // the app itself, built once signed in
+          app: () => HomeScreen(
+            settings: _settings,
+            calculation: _calculation,
+            plate: _plate,
+            store: _store,
+            levelRun: _levelRun,
+            account: _account,
+          ),
         ),
       ),
     );
@@ -132,6 +138,42 @@ const destinations = [
   Destination(label: 'Settings', icon: Icons.tune_outlined, title: 'Settings', subtitle: 'Units, decimals and display'),
 ];
 
+/// The app is used signed in: the sign-in screen until the account is known (remembered on this
+/// device, or on the web the website's sign-in), then the app. Signing out comes back here. The
+/// Windows program looks for a newer version either way.
+class _SignedInOnly extends StatefulWidget {
+  const _SignedInOnly({
+    required this.account,
+    required this.settings,
+    required this.app,
+    required this.checkForUpdates,
+  });
+  final Account account;
+  final AppSettings settings;
+  final Widget Function() app;
+  final bool checkForUpdates;
+
+  @override
+  State<_SignedInOnly> createState() => _SignedInOnlyState();
+}
+
+class _SignedInOnlyState extends State<_SignedInOnly> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.checkForUpdates) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => checkForUpdate(context));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: widget.account,
+    builder: (context, _) =>
+        widget.account.signedIn ? widget.app() : SignInScreen(account: widget.account, settings: widget.settings),
+  );
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
     super.key,
@@ -141,10 +183,8 @@ class HomeScreen extends StatefulWidget {
     required this.store,
     required this.levelRun,
     required this.account,
-    this.checkForUpdates = false,
   });
   final Account account;
-  final bool checkForUpdates;
   final AppSettings settings;
   final LevelRunState levelRun;
   final Store store;
@@ -157,15 +197,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _page = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    // the Windows program checks for a newer version once it is open
-    if (widget.checkForUpdates) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => checkForUpdate(context));
-    }
-  }
 
   late final _exporter = Exporter(
     calculation: widget.calculation,

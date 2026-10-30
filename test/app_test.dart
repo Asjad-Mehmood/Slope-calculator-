@@ -6,11 +6,13 @@ import 'package:slope_calculator/src/state/store.dart';
 import 'package:slope_calculator/src/ui/settings.dart';
 import 'package:slope_calculator/src/ui/widgets.dart';
 
+import 'signed_in.dart';
+
 Future<void> pumpAt(WidgetTester tester, Size size, {Store? store}) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
-  await tester.pumpWidget(SlopeCalculatorApp(store: store ?? Store.memory()));
+  await tester.pumpWidget(SlopeCalculatorApp(store: signedInStore(store)));
   await tester.pumpAndSettle();
 }
 
