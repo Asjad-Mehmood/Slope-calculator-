@@ -48,8 +48,8 @@ jobs:
           dart run tool/worked_examples.dart > "$RUNNER_TEMP/worked-examples.md"
           diff -u docs/worked-examples.md "$RUNNER_TEMP/worked-examples.md"
 
-      - name: Build the web app
-        run: flutter build web --release --base-href /slope-calculation/app/
+      - name: Build the web app (as the website serves it, with sw.js for offline use)
+        run: tool/web_build.sh
 
   windows:
     runs-on: windows-latest

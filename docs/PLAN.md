@@ -40,9 +40,9 @@ browser (Google), Saved page to save, open and delete. Saving and deleting work 
 change waits on the device and is sent when the website can be reached; the last list is kept to
 show offline. Admin → Slope Calculator on the website: surveyors, their calculations, export, delete.
 
-## 🔜 Phase 7: web version and product page
-Web build at `/slope-calculation/app`, installable, offline; product page, menu, sitemap, home
-page "New" badge, download counts.
+## ✅ Phase 7: web version and product page
+Web build at `/slope-calculation/app` (`tool/web_build.sh`), installable, offline; product page
+`/slope-calculation`, menu, footer, sitemap, home page "New" badge, download counts and reviews.
 
 ## ✅ Phase 8: Windows program and GitHub build
 NSIS installer (per user, no admin, Start menu and desktop shortcuts, Settings → Apps), the
