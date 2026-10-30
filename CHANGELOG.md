@@ -2,6 +2,19 @@
 
 ## 1.0.0 (in development)
 
+### Phase 6: Excel to KML account
+- Sign in with the Excel to KML account, or create one: the website emails a 6-digit code to
+  confirm the email, as on the website and in the other apps. Forgot the password sends the
+  website's reset link.
+- Sign in with the browser: a code shown in the app is confirmed at exceltokml.com/link, where
+  Google sign-in works.
+- Saved page: save the current calculation (the line, its settings and the project plate) to the
+  account, see them all with their slope, chainages and date, open one back into the calculator,
+  delete one. The same list on Windows, the web app and phones.
+- The Windows program keeps its sign-in token on the device; the web app uses the website's
+  sign-in. Requests say which app, platform and version they come from.
+- Website side (KML-WEBSITE- repository): the slope_jobs table and its API.
+
 ### Phase 5: reports
 - Export menu on the Calculator: Excel report, PDF report, Print, and the chainage levels as CSV.
   Windows asks where to save; the web app downloads. Everything is made inside the app, offline.

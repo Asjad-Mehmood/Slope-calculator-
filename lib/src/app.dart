@@ -1,12 +1,17 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'account/account.dart';
+import 'account/api.dart';
+import 'account/http_client.dart';
 
 import 'brand.dart';
 import 'export/export_button.dart';
 import 'screens/calculator_screen.dart';
-import 'screens/coming_soon_screen.dart';
 import 'screens/crossfall_screen.dart';
 import 'screens/level_screen.dart';
 import 'screens/project_plate_screen.dart';
+import 'screens/saved_screen.dart';
 import 'screens/settings_screen.dart';
 import 'state/calculation.dart';
 import 'state/level_run_state.dart';
@@ -18,7 +23,10 @@ import 'ui/theme.dart';
 
 /// The app's frame. Light and dark follow the computer until the user picks one.
 class SlopeCalculatorApp extends StatefulWidget {
-  const SlopeCalculatorApp({super.key, this.store});
+  const SlopeCalculatorApp({super.key, this.store, this.api});
+
+  /// The website connection; tests pass one that answers from memory
+  final Api? api;
 
   /// Where settings and inputs are remembered; tests pass [Store.memory]
   final Store? store;
@@ -33,12 +41,23 @@ class _SlopeCalculatorAppState extends State<SlopeCalculatorApp> {
   late final Calculation _calculation = Calculation(_store, _settings);
   late final ProjectPlate _plate = ProjectPlate(_store);
   final _levelRun = LevelRunState();
+  late final Account _account = Account(
+    widget.api ?? Api(base: defaultApiBase(), client: makeClient(), platform: kIsWeb ? 'web' : 'windows'),
+    _store,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _account.restore();
+  }
 
   @override
   void dispose() {
     _calculation.dispose();
     _plate.dispose();
     _levelRun.dispose();
+    _account.dispose();
     _settings.dispose();
     super.dispose();
   }
@@ -63,6 +82,7 @@ class _SlopeCalculatorAppState extends State<SlopeCalculatorApp> {
           plate: _plate,
           store: _store,
           levelRun: _levelRun,
+          account: _account,
         ),
       ),
     );
@@ -105,7 +125,9 @@ class HomeScreen extends StatefulWidget {
     required this.plate,
     required this.store,
     required this.levelRun,
+    required this.account,
   });
+  final Account account;
   final AppSettings settings;
   final LevelRunState levelRun;
   final Store store;
@@ -136,10 +158,11 @@ class _HomeScreenState extends State<HomeScreen> {
         store: widget.store,
         levelRun: widget.levelRun,
       ),
-      const ComingSoonScreen(
-        icon: Icons.folder_open_outlined,
-        phase: 6,
-        text: 'Sign in with your Excel to KML account to save calculations and open them on any device.',
+      SavedScreen(
+        account: widget.account,
+        calculation: widget.calculation,
+        plate: widget.plate,
+        onOpened: () => setState(() => _page = 0),
       ),
       SettingsScreen(settings: widget.settings),
     ];
@@ -148,6 +171,8 @@ class _HomeScreenState extends State<HomeScreen> {
       selected: _page,
       onSelect: (i) => setState(() => _page = i),
       settings: widget.settings,
+      account: widget.account,
+      onAccount: () => setState(() => _page = 3),
       headerActions: [
         if (_page == 0) ...[
           ProjectPlateButton(plate: widget.plate),

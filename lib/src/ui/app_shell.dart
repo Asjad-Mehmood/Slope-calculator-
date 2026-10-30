@@ -2,6 +2,7 @@
 // bar along the bottom on a phone; a header with the page title, text size and light/dark.
 import 'package:flutter/material.dart';
 
+import '../account/account.dart';
 import '../brand.dart';
 import 'settings.dart';
 import 'theme.dart';
@@ -22,8 +23,15 @@ class AppShell extends StatelessWidget {
     required this.onSelect,
     required this.settings,
     required this.child,
+    required this.account,
+    required this.onAccount,
     this.headerActions = const [],
   });
+
+  final Account account;
+
+  /// Opens the Saved page, where the account is
+  final VoidCallback onAccount;
 
   final List<Destination> destinations;
   final int selected;
@@ -53,7 +61,13 @@ class AppShell extends StatelessWidget {
       return Scaffold(
         body: Row(
           children: [
-            _Sidebar(destinations: destinations, selected: selected, onSelect: onSelect),
+            _Sidebar(
+              destinations: destinations,
+              selected: selected,
+              onSelect: onSelect,
+              account: account,
+              onAccount: onAccount,
+            ),
             Expanded(child: body),
           ],
         ),
@@ -109,7 +123,15 @@ class _Logo extends StatelessWidget {
 }
 
 class _Sidebar extends StatelessWidget {
-  const _Sidebar({required this.destinations, required this.selected, required this.onSelect});
+  const _Sidebar({
+    required this.destinations,
+    required this.selected,
+    required this.onSelect,
+    required this.account,
+    required this.onAccount,
+  });
+  final Account account;
+  final VoidCallback onAccount;
   final List<Destination> destinations;
   final int selected;
   final ValueChanged<int> onSelect;
@@ -163,12 +185,17 @@ class _Sidebar extends StatelessWidget {
             const Spacer(),
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
-              child: OutlinedButton.icon(
-                onPressed: () =>
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(const SnackBar(content: Text('Sign in with Excel to KML comes in phase 6.'))),
-                icon: const Icon(Icons.account_circle_outlined),
-                label: const Text('Sign in'),
+              child: ListenableBuilder(
+                listenable: account,
+                builder: (context, _) => OutlinedButton.icon(
+                  onPressed: onAccount,
+                  icon: Icon(account.signedIn ? Icons.account_circle_rounded : Icons.account_circle_outlined),
+                  label: Text(
+                    account.signedIn ? account.user!.display : 'Sign in',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ),
             ),
             Padding(

@@ -54,6 +54,18 @@ class Calculation extends ChangeNotifier {
     _save();
   }
 
+  /// What a saved calculation keeps: the boxes as typed, the decimals and the station setting
+  Map<String, Object?> toJson() => {..._texts, 'decimals': _decimals, 'spacing': _settings.spacing.name};
+
+  /// Opens a saved calculation
+  void loadJson(Map<String, Object?> j) {
+    _texts = {for (final f in fields) f: (j[f] as String?) ?? ''};
+    _decimals = ((j['decimals'] as num?)?.toInt() ?? _decimals).clamp(1, 5);
+    final spacing = StationSpacing.values.asNameMap()[j['spacing']];
+    if (spacing != null) _settings.spacing = spacing;
+    _save();
+  }
+
   void clear() {
     _texts = {for (final f in fields) f: f == 'interval' ? _texts['interval']! : ''};
     _save();

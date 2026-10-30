@@ -75,6 +75,8 @@ class ProjectPlate extends ChangeNotifier {
     notifyListeners();
   }
 
+  Map<String, String> get values => Map.unmodifiable(_values);
+
   int get filled => _values.length;
   bool get isEmpty => _values.isEmpty;
   String get projectName => this['project'];

@@ -35,7 +35,22 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   Calculation get calc => widget.calculation;
 
   @override
+  void initState() {
+    super.initState();
+    calc.addListener(_syncBoxes);
+  }
+
+  /// A saved calculation was opened: show its values in the boxes
+  void _syncBoxes() {
+    for (final f in Calculation.fields) {
+      final box = _boxes[f]!;
+      if (box.text != calc.text(f)) box.text = calc.text(f);
+    }
+  }
+
+  @override
   void dispose() {
+    calc.removeListener(_syncBoxes);
     for (final c in [..._boxes.values, _goTo]) {
       c.dispose();
     }

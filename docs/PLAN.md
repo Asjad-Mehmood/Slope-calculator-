@@ -33,11 +33,13 @@ Excel (Project Plate, Slope Summary, Chainage Levels, Crossfall, Level Book, QA 
 (chainage levels, level book), PDF with the profile and sign-off boxes, print. Save As on Windows,
 download in the browser. KML needs coordinates the app doesn't ask for yet: left for later.
 
-## 🔜 Phase 6: account and dashboard
-Website APIs (`api/slope/jobs`, usage) and admin page in the KML-WEBSITE- repository; sign-up with
-the emailed code, sign-in, Google sign-in; saved calculations, offline queue.
+## ✅ Phase 6: account and saved calculations
+Website (KML-WEBSITE-): `slope_jobs` table, `GET /api/slope/jobs`, `PUT`/`DELETE /api/slope/jobs/[id]`,
+`GET /api/admin/slope`. App: sign in, create an account with the emailed code, sign in through the
+browser (Google), Saved page to save, open and delete. Still to do: an admin page on the website
+for the figures, and saving while offline (now it says it can't reach the site).
 
-## ⬜ Phase 7: web version and product page
+## 🔜 Phase 7: web version and product page
 Web build at `/slope-calculation/app`, installable, offline; product page, menu, sitemap, home
 page "New" badge, download counts.
 
