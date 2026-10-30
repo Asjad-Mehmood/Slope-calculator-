@@ -27,6 +27,13 @@
 - The Windows program keeps its sign-in token on the device; the web app uses the website's
   sign-in. Requests say which app, platform and version they come from.
 - Website side (KML-WEBSITE- repository): the slope_jobs table and its API.
+- Offline: a calculation saved (or deleted) without a connection waits on the device, marked
+  "Waiting to send", and is sent the next time the app reaches the website (refresh, the next
+  save, opening the app, coming back to it, or "Send now"). The list from the last refresh is kept,
+  so the Saved page works offline and after a restart. Waiting changes belong to the account and
+  are sent after signing in again.
+- Admin → Slope Calculator on the website: each surveyor with their calculations, slope and
+  chainages, the saved inputs, CSV and JSON export, delete.
 
 ### Phase 5: reports
 - Export menu on the Calculator: Excel report, PDF report, Print, and the chainage levels as CSV.

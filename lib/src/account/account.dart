@@ -41,12 +41,19 @@ class SavedCalculation {
     required this.data,
     required this.summary,
     required this.updated,
+    this.waiting = false,
   });
   final String id;
   final String name;
   final Map<String, Object?> data;
   final Map<String, Object?> summary;
   final String updated;
+
+  /// Saved offline: kept on this device until the website can be reached
+  final bool waiting;
+
+  SavedCalculation waitingToSend() =>
+      SavedCalculation(id: id, name: name, data: data, summary: summary, updated: updated, waiting: true);
 
   static SavedCalculation? from(Object? j) {
     if (j is! Map<String, Object?>) return null;
@@ -76,6 +83,13 @@ class Account extends ChangeNotifier {
     final j = _store.readJson(_key);
     api.token = j?['token'] as String?;
     _user = AccountUser.from(j?['user']);
+    if (_user != null) _showKept();
+  }
+
+  /// The list from the last refresh, kept on this device, with what is waiting
+  void _showKept() {
+    final kept = _store.readJson(_listKey)?['jobs'];
+    _showList([if (kept is List) ...kept.map(SavedCalculation.from).whereType<SavedCalculation>()]);
   }
 
   final Api api;
@@ -100,6 +114,7 @@ class Account extends ChangeNotifier {
     if (j['token'] is String) api.token = j['token'] as String;
     _user = user;
     _remember();
+    _showKept();
     notifyListeners();
     unawaited(refresh());
   }
@@ -120,8 +135,13 @@ class Account extends ChangeNotifier {
       notifyListeners();
       await refresh();
     } on ApiError catch (e) {
-      // offline: keep the remembered account; refused: sign out
-      if (e.status == 401) _forget();
+      // offline: keep the remembered account and its kept list; refused: sign out
+      if (e.status == 401) {
+        _forget();
+      } else if (e.status == null && signedIn) {
+        offline = true;
+        notifyListeners();
+      }
     }
   }
 
@@ -206,11 +226,103 @@ class Account extends ChangeNotifier {
     api.token = null;
     _user = null;
     _saved = const [];
+    _onSite = const {};
+    offline = false;
     _store.remove(_key);
     notifyListeners();
   }
 
   // ------------------------------------------------------------ saved calculations
+  //
+  // Saving and deleting work offline: what can't reach the website waits on this device (per
+  // account) and is sent the next time the list is refreshed, a calculation is saved, the app
+  // starts or comes back to the front, or "Send now" is pressed. The list from the last refresh is
+  // kept too, so the Saved page still shows it without a connection.
+
+  String get _waitingKey => 'waiting.${_user?.id}';
+  String get _listKey => 'saved.${_user?.id}';
+
+  List<Map<String, Object?>> _readWaiting() {
+    final ops = _user == null ? null : _store.readJson(_waitingKey)?['ops'];
+    return [if (ops is List) ...ops.whereType<Map<String, Object?>>()];
+  }
+
+  void _writeWaiting(List<Map<String, Object?>> ops) =>
+      ops.isEmpty ? _store.remove(_waitingKey) : _store.writeJson(_waitingKey, {'ops': ops});
+
+  /// Saves and deletes made offline, not yet sent to the website
+  int get waiting => _readWaiting().length;
+
+  /// The last refresh couldn't reach the website: the list is the one kept on this device
+  bool offline = false;
+
+  bool _sending = false;
+
+  /// Why the website refused a waiting change, by change, for the save that is waiting on it
+  final _refused = <String, String>{};
+
+  /// The calculations the website had at the last refresh
+  Set<String> _onSite = const {};
+
+  static String _opKey(Map<String, Object?> op) => '${op['op']} ${op['id']} ${op['updated_at']}';
+
+  /// Sends what is waiting, oldest first; stops at the first one that can't reach the website.
+  /// A change the website refuses (too big, too many) is dropped and its reason shown.
+  Future<void> sendWaiting() async {
+    if (!signedIn || _sending) return;
+    _sending = true;
+    try {
+      var ops = _readWaiting();
+      while (ops.isNotEmpty) {
+        final op = ops.first;
+        final id = op['id']! as String;
+        try {
+          if (op['op'] == 'delete') {
+            await api.call('DELETE', '/api/slope/jobs/$id');
+          } else {
+            await api.call('PUT', '/api/slope/jobs/$id', {
+              'name': op['name'],
+              'data': op['data'],
+              'summary': op['summary'],
+              'updated_at': op['updated_at'],
+            });
+          }
+        } on ApiError catch (e) {
+          if (e.status == null) {
+            offline = true;
+            return;
+          }
+          if (e.status == 401) {
+            _forget();
+            return;
+          }
+          _refused[_opKey(op)] = e.message;
+          problem = '"${op['name'] ?? 'A calculation'}" was not sent: ${e.message}';
+        }
+        // read again: something may have been added while this one was sending
+        ops = _readWaiting()..removeWhere((o) => _opKey(o) == _opKey(op));
+        _writeWaiting(ops);
+      }
+    } finally {
+      _sending = false;
+    }
+  }
+
+  /// The website's list with what is waiting laid over it
+  void _showList(List<SavedCalculation> fromSite) {
+    _onSite = {for (final s in fromSite) s.id};
+    final list = [...fromSite];
+    for (final op in _readWaiting()) {
+      final id = op['id'];
+      list.removeWhere((s) => s.id == id);
+      if (op['op'] == 'save') {
+        final s = SavedCalculation.from(op);
+        if (s != null) list.add(s.waitingToSend());
+      }
+    }
+    list.sort((a, b) => b.updated.compareTo(a.updated));
+    _saved = list;
+  }
 
   Future<void> refresh() async {
     if (!signedIn) return;
@@ -218,42 +330,77 @@ class Account extends ChangeNotifier {
     problem = null;
     notifyListeners();
     try {
+      await sendWaiting();
+      if (!signedIn) return;
       final j = await api.call('GET', '/api/slope/jobs');
       final list = j['jobs'];
-      _saved = [if (list is List) ...list.map(SavedCalculation.from).whereType<SavedCalculation>()];
+      final fromSite = [if (list is List) ...list.map(SavedCalculation.from).whereType<SavedCalculation>()];
+      _store.writeJson(_listKey, {'jobs': list is List ? list : const []});
+      offline = false;
+      _showList(fromSite);
     } on ApiError catch (e) {
-      problem = e.message;
-      if (e.status == 401) _forget();
+      if (e.status == 401) {
+        _forget();
+      } else if (e.status == null) {
+        offline = true;
+        _showKept();
+      } else {
+        problem = e.message;
+      }
     } finally {
       loading = false;
       notifyListeners();
     }
   }
 
-  /// Saves (or, with the same [id], replaces) a calculation in the account
-  Future<void> save({
+  /// Saves (or, with the same [id], replaces) a calculation in the account. True when the website
+  /// has it; false when there was no connection and it waits on this device to be sent.
+  Future<bool> save({
     String? id,
     required String name,
     required Map<String, Object?> data,
     Map<String, Object?> summary = const {},
-  }) async {
-    final key = id ?? newId();
-    await api.call('PUT', '/api/slope/jobs/$key', {
-      'name': name,
-      'data': data,
-      'summary': summary,
-      'updated_at': DateTime.now().toUtc().toIso8601String(),
-    });
-    await refresh();
+  }) => _change({
+    'op': 'save',
+    'id': id ?? newId(),
+    'name': name,
+    'data': data,
+    'summary': summary,
+    'updated_at': DateTime.now().toUtc().toIso8601String(),
+  });
+
+  /// Deletes a calculation; offline, it is hidden now and deleted on the website later
+  Future<bool> delete(String id) {
+    final waiting = _readWaiting();
+    final unsent = waiting.where((o) => o['id'] == id).toList();
+    if (unsent.isNotEmpty && !_onSite.contains(id)) {
+      // never reached the website: forget it here
+      _writeWaiting(waiting..removeWhere((o) => o['id'] == id));
+      _saved = [
+        for (final s in _saved)
+          if (s.id != id) s,
+      ];
+      notifyListeners();
+      return Future.value(true);
+    }
+    return _change({'op': 'delete', 'id': id, 'updated_at': DateTime.now().toUtc().toIso8601String()});
   }
 
-  Future<void> delete(String id) async {
-    await api.call('DELETE', '/api/slope/jobs/$id');
-    _saved = [
-      for (final s in _saved)
-        if (s.id != id) s,
-    ];
-    notifyListeners();
+  Future<bool> _change(Map<String, Object?> op) async {
+    if (!signedIn) throw ApiError('Sign in to keep calculations in your account.');
+    final ops = _readWaiting()
+      // a newer change to the same calculation replaces one still waiting
+      ..removeWhere((o) => o['id'] == op['id'])
+      ..add(op);
+    _writeWaiting(ops);
+    await refresh();
+    final refused = _refused.remove(_opKey(op));
+    if (refused != null) {
+      problem = null;
+      notifyListeners();
+      throw ApiError(refused);
+    }
+    return !_readWaiting().any((o) => _opKey(o) == _opKey(op));
   }
 
   static String newId() {

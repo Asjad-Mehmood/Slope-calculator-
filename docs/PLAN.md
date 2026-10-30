@@ -36,8 +36,9 @@ download in the browser. KML needs coordinates the app doesn't ask for yet: left
 ## ✅ Phase 6: account and saved calculations
 Website (KML-WEBSITE-): `slope_jobs` table, `GET /api/slope/jobs`, `PUT`/`DELETE /api/slope/jobs/[id]`,
 `GET /api/admin/slope`. App: sign in, create an account with the emailed code, sign in through the
-browser (Google), Saved page to save, open and delete. Still to do: an admin page on the website
-for the figures, and saving while offline (now it says it can't reach the site).
+browser (Google), Saved page to save, open and delete. Saving and deleting work offline: the
+change waits on the device and is sent when the website can be reached; the last list is kept to
+show offline. Admin → Slope Calculator on the website: surveyors, their calculations, export, delete.
 
 ## 🔜 Phase 7: web version and product page
 Web build at `/slope-calculation/app`, installable, offline; product page, menu, sitemap, home

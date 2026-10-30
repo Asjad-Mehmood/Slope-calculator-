@@ -51,14 +51,23 @@ class _SlopeCalculatorAppState extends State<SlopeCalculatorApp> {
     _store,
   );
 
+  // back in front (or online again on a phone): send calculations saved while offline
+  late final AppLifecycleListener _lifecycle;
+
   @override
   void initState() {
     super.initState();
+    _lifecycle = AppLifecycleListener(
+      onResume: () {
+        if (_account.signedIn && _account.waiting > 0) _account.refresh();
+      },
+    );
     _account.restore();
   }
 
   @override
   void dispose() {
+    _lifecycle.dispose();
     _calculation.dispose();
     _plate.dispose();
     _levelRun.dispose();
