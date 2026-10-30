@@ -19,19 +19,35 @@ const pages = ['Calculator', 'Crossfall', 'Level', 'Saved', 'Settings'];
 
 Future<void> open(WidgetTester tester, String page) async {
   await tester.tap(find.byKey(ValueKey('nav $page')));
-  await tester.pumpAndSettle();
+  await settle(tester);
+}
+
+/// Lets transitions finish; the optical trainer animates for as long as it is on screen, so this
+/// doesn't wait for everything to stop
+Future<void> settle(WidgetTester tester) async {
+  for (var i = 0; i < 10; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
 }
 
 /// Scrolls every scrollable to its end, so the bottom of each page is built and laid out too
 Future<void> scrollAll(WidgetTester tester) async {
   for (final state in tester.stateList<ScrollableState>(find.byType(Scrollable)).toList()) {
-    if (!state.mounted) continue;
+    if (!state.mounted || state.position.axis != Axis.vertical) continue;
     final p = state.position;
     if (p.maxScrollExtent > 0) {
       p.jumpTo(p.maxScrollExtent);
       await tester.pump();
     }
   }
+}
+
+/// "Calculator: overflowed by 20 pixels on the right at lib/src/…:349" for each problem
+String describe(String where, FlutterErrorDetails e) {
+  final text = e.toString();
+  final what = RegExp(r'overflowed by [0-9.]+ pixels on the \w+').firstMatch(text)?[0] ?? e.exceptionAsString();
+  final at = RegExp(r'lib/src/\S+?\.dart:\d+').firstMatch(text)?[0] ?? 'Flutter';
+  return '$where: $what at $at';
 }
 
 void main() {
@@ -46,28 +62,36 @@ void main() {
           addTearDown(tester.view.reset);
           addTearDown(tester.platformDispatcher.clearAllTestValues);
 
+          final problems = <String>[];
+          var where = 'start';
+          final report = FlutterError.onError;
+          FlutterError.onError = (e) => problems.add(describe(where, e));
+          addTearDown(() => FlutterError.onError = report);
+
           await tester.pumpWidget(SlopeCalculatorApp(store: signedInStore()));
           await tester.pumpAndSettle();
           for (final page in pages) {
+            where = page;
             await open(tester, page);
             await scrollAll(tester);
-            expect(tester.takeException(), isNull, reason: page);
           }
           // the second tab of Level, and the project plate
+          where = 'Optical trainer';
           await open(tester, 'Level');
           await tester.tap(find.text('Optical trainer'));
-          await tester.pumpAndSettle();
+          await settle(tester);
           await scrollAll(tester);
-          expect(tester.takeException(), isNull, reason: 'Optical trainer');
+          where = 'Project plate';
           await open(tester, 'Calculator');
           await tester.tap(
             find.byTooltip('Project plate').evaluate().isEmpty
                 ? find.text('Project plate')
                 : find.byTooltip('Project plate'),
           );
-          await tester.pumpAndSettle();
+          await settle(tester);
           await scrollAll(tester);
-          expect(tester.takeException(), isNull, reason: 'Project plate');
+          FlutterError.onError = report;
+          expect(problems.toSet().toList(), isEmpty);
         });
       }
     }
