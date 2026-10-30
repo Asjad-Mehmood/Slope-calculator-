@@ -8,3 +8,4 @@ in source or compiled form, without prior written permission from the owner.
 
 Third-party components keep their own licences, including:
 - Flutter and the Dart SDK (BSD 3-Clause licence)
+- Inter and JetBrains Mono fonts (SIL Open Font Licence 1.1), in assets/fonts/

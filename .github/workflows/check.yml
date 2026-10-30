@@ -1,6 +1,7 @@
 name: Check
 
-# On every push and pull request: the code is formatted, the lints pass, every test passes, and
+# On every push and pull request: the code is formatted, the lints pass, every test passes (the
+# calculations also in a browser), the worked examples match the code, and
 # the web app and the Windows program still build. Nothing is published. The Windows build is
 # kept for 14 days under the run's Artifacts, to try before a release.
 on:
@@ -38,6 +39,14 @@ jobs:
 
       - name: Tests
         run: flutter test
+
+      - name: The calculations give the same answers in a browser
+        run: flutter test --platform chrome test/calc
+
+      - name: The worked examples are up to date
+        run: |
+          dart run tool/worked_examples.dart > "$RUNNER_TEMP/worked-examples.md"
+          diff -u docs/worked-examples.md "$RUNNER_TEMP/worked-examples.md"
 
       - name: Build the web app
         run: flutter build web --release --base-href /slope-calculation/app/

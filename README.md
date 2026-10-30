@@ -10,7 +10,7 @@ and PDF reports. Optional tools: crossfall from the centreline, a digital level 
 checked level book, and an optical level trainer. Calculations are saved to your Excel to KML
 account.
 
-> **Status: version 1.0.0 in development.** Phase 0 (project setup) is done. See
+> **Status: version 1.0.0 in development.** Phases 0 (setup), 1 (calculations) and 2 (look and feel) are done. See
 > [docs/PLAN.md](docs/PLAN.md) for the phases and [CHANGELOG.md](CHANGELOG.md) for progress.
 
 ## One app, every platform
@@ -40,6 +40,8 @@ flutter pub get
 flutter analyze          # lints, must report no issues
 dart format --output=none --set-exit-if-changed lib test
 flutter test             # all tests must pass
+flutter test --platform chrome test/calc   # the calculations in a browser
+dart run tool/worked_examples.dart > docs/worked-examples.md
 flutter run -d windows   # or: -d chrome
 ```
 
@@ -56,14 +58,16 @@ flutter build web --release --base-href /slope-calculation/app/ --dart-define=AP
 lib/main.dart            starts the app
 lib/src/app.dart         the app's frame and themes (light, dark, follow the computer)
 lib/src/brand.dart       name, version, publisher and colours
-lib/src/calc/            the calculations, no screens (phase 1)
-lib/src/ui/              the shared look: inputs, tiles, tables (phase 2)
+lib/src/calc/            the calculations, no screens: slope, chainage, crossfall, level book, level run
+lib/src/ui/              the shared look: theme, frame, inputs, tiles, tables, profile
 lib/src/screens/         calculator, results, profile, project plate, tools (phases 3-4)
 lib/src/export/          Excel, CSV, PDF and print (phase 5)
 lib/src/account/         sign in with Excel to KML, saved calculations (phase 6)
 assets/brand/            the logo (SVG) and icons
+assets/fonts/            Inter and JetBrains Mono, with their licences
 reference/v28/           the V28 HTML app this rewrite replaces: the specification
-docs/                    plan, decisions and release notes
+docs/                    plan, decisions, worked examples and release notes
+tool/worked_examples.dart  prints docs/worked-examples.md from the calculations
 windows/ web/ android/ ios/   platform projects
 ```
 

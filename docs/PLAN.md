@@ -6,33 +6,40 @@ Each phase ends with something that can be checked. ✅ done · 🔜 next · ⬜
 Repository, Flutter project for every platform, name, version, logo and icons, Windows program
 details, lint rules, smoke test, Check workflow, V28 kept as the specification.
 
-## 🔜 Phase 1: calculation engine (`lib/src/calc/`, no screens)
+## ✅ Phase 1: calculation engine (`lib/src/calc/`, no screens)
 - Slope between two points: ΔH, ΔX, slope per metre, slope %, 1 in N, rising / falling / level; input checks.
 - Chainage levels: start, every multiple of the interval, end; level and change from start; level at any chainage; chainage format `k+mmm.mmm`, negatives included.
 - Crossfall from the centreline: left and right levels, up or down.
 - Level book: setups within the max sight, staff readings kept on a 4 m staff (0.3 to 3.9 m), extra change points on steep slopes, HI and Rise & Fall, arithmetic check, closing error against C√K mm.
-- At least 40 tested cases, including the V28 examples and the Excel template.
+- 63 tested cases, including the V28 examples and the Excel template, run on the computer and in a browser.
+- [Worked examples](worked-examples.md) to check by hand.
 
-## ⬜ Phase 2: look and feel
+## ✅ Phase 2: look and feel (approved)
 Colours, bundled fonts, inputs, tiles, tables, cards, foldable optional sections, wide and phone
 layouts, keyboard and screen-reader use, text size. Screenshots for approval.
 
-## ⬜ Phase 3: main screens
-Start, calculator, results, profile with probe, chainage levels table, project plate, settings.
+## ✅ Phase 3: main screens
+Calculator with remembered inputs, results, profile with a probe, chainage levels with "Go to
+chainage", project plate, settings (theme, text size, stations, decimals, interval, allowable C).
+The calculator is the start screen; recent calculations come with accounts in phase 6.
 
-## ⬜ Phase 4: optional tools
-Crossfall with a cross-section drawing; digital level simulator; optical level trainer (runs only
-while open); practice mode.
+## ✅ Phase 4: optional tools
+Crossfall with a cross-section drawing; digital level run (step or play, instrument display, level
+book by HI or Rise & Fall, checks and closing error); optical level trainer with an E-pattern
+staff, watch and practise modes. Animations run only while their page is on screen.
 
-## ⬜ Phase 5: reports (offline)
-Excel (Project Plate, Summary, Chainage Levels, Crossfall, Level Book), CSV, PDF with sign-off
-boxes, print, optional KML.
+## ✅ Phase 5: reports (offline)
+Excel (Project Plate, Slope Summary, Chainage Levels, Crossfall, Level Book, QA QC Checklist), CSV
+(chainage levels, level book), PDF with the profile and sign-off boxes, print. Save As on Windows,
+download in the browser. KML needs coordinates the app doesn't ask for yet: left for later.
 
-## ⬜ Phase 6: account and dashboard
-Website APIs (`api/slope/jobs`, usage) and admin page in the KML-WEBSITE- repository; sign-up with
-the emailed code, sign-in, Google sign-in; saved calculations, offline queue.
+## ✅ Phase 6: account and saved calculations
+Website (KML-WEBSITE-): `slope_jobs` table, `GET /api/slope/jobs`, `PUT`/`DELETE /api/slope/jobs/[id]`,
+`GET /api/admin/slope`. App: sign in, create an account with the emailed code, sign in through the
+browser (Google), Saved page to save, open and delete. Still to do: an admin page on the website
+for the figures, and saving while offline (now it says it can't reach the site).
 
-## ⬜ Phase 7: web version and product page
+## 🔜 Phase 7: web version and product page
 Web build at `/slope-calculation/app`, installable, offline; product page, menu, sitemap, home
 page "New" badge, download counts.
 
