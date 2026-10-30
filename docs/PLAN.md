@@ -6,14 +6,15 @@ Each phase ends with something that can be checked. ✅ done · 🔜 next · ⬜
 Repository, Flutter project for every platform, name, version, logo and icons, Windows program
 details, lint rules, smoke test, Check workflow, V28 kept as the specification.
 
-## 🔜 Phase 1: calculation engine (`lib/src/calc/`, no screens)
+## ✅ Phase 1: calculation engine (`lib/src/calc/`, no screens)
 - Slope between two points: ΔH, ΔX, slope per metre, slope %, 1 in N, rising / falling / level; input checks.
 - Chainage levels: start, every multiple of the interval, end; level and change from start; level at any chainage; chainage format `k+mmm.mmm`, negatives included.
 - Crossfall from the centreline: left and right levels, up or down.
 - Level book: setups within the max sight, staff readings kept on a 4 m staff (0.3 to 3.9 m), extra change points on steep slopes, HI and Rise & Fall, arithmetic check, closing error against C√K mm.
-- At least 40 tested cases, including the V28 examples and the Excel template.
+- 63 tested cases, including the V28 examples and the Excel template, run on the computer and in a browser.
+- [Worked examples](worked-examples.md) to check by hand.
 
-## ⬜ Phase 2: look and feel
+## 🔜 Phase 2: look and feel
 Colours, bundled fonts, inputs, tiles, tables, cards, foldable optional sections, wide and phone
 layouts, keyboard and screen-reader use, text size. Screenshots for approval.
 

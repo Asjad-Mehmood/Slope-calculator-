@@ -12,6 +12,10 @@ specification for what the app does. It is **not** part of the app and is never 
 
 ## Known problems in V28 (each is fixed in the rewrite, with a test)
 
+1 and 2 are fixed in the calculation engine (phase 1, `test/calc/level_run_test.dart`); the rest
+come with the screens, reports and accounts.
+
+
 1. **Max sight does nothing.** The input and the drawing's sight line share the id `dlSight`, so the code reads the line, not the input.
 2. **Impossible staff readings on steep slopes.** 100 → 60 m over 100 m books BS −2.40 m and FS 5.60 m on a 4 m staff; no change points are added between stations.
 3. **The manual link is broken.** It points to `Slope_Calculation_Application_User_Manual.pdf`, which is not in the package.
