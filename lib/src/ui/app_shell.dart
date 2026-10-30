@@ -266,7 +266,8 @@ class _Header extends StatelessWidget {
               ],
             ),
           ),
-          if (!compact) ...[...actions, const SizedBox(width: 8)],
+          ...actions,
+          if (!compact) const SizedBox(width: 8),
           ListenableBuilder(
             listenable: settings,
             builder: (context, _) => Row(

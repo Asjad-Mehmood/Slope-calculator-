@@ -533,14 +533,16 @@ class Notice extends StatelessWidget {
   }
 }
 
-/// A table with a header that stays in view, striped rows and highlighted rows (start and end).
-class DataGrid extends StatelessWidget {
+/// A table with a header that stays in view, striped rows, highlighted rows (start and end) and
+/// one row that can be brought into view and marked ([focusRow], from "Go to chainage").
+class DataGrid extends StatefulWidget {
   const DataGrid({
     super.key,
     required this.columns,
     required this.rows,
     this.numeric = const {},
     this.highlighted = const {},
+    this.focusRow,
     this.maxHeight = 420,
   });
 
@@ -552,16 +554,53 @@ class DataGrid extends StatelessWidget {
 
   /// Rows drawn in the accent colour
   final Set<int> highlighted;
+  final int? focusRow;
   final double maxHeight;
+
+  static const rowHeight = 40.0;
+
+  @override
+  State<DataGrid> createState() => _DataGridState();
+}
+
+class _DataGridState extends State<DataGrid> {
+  final _scroll = ScrollController();
+
+  @override
+  void didUpdateWidget(DataGrid old) {
+    super.didUpdateWidget(old);
+    final row = widget.focusRow;
+    if (row != null && row != old.focusRow) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_scroll.hasClients) return;
+        final target = (row * DataGrid.rowHeight - widget.maxHeight / 2 + DataGrid.rowHeight / 2).clamp(
+          0.0,
+          _scroll.position.maxScrollExtent,
+        );
+        if (MediaQuery.disableAnimationsOf(context)) {
+          _scroll.jumpTo(target);
+        } else {
+          _scroll.animateTo(target, duration: const Duration(milliseconds: 260), curve: Curves.easeOut);
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final w = widget;
     Widget cell(String text, int col, {bool head = false, bool bold = false}) => Expanded(
       flex: col == 0 ? 6 : 5,
       child: Text(
         text,
-        textAlign: numeric.contains(col) ? TextAlign.right : TextAlign.left,
+        textAlign: w.numeric.contains(col) ? TextAlign.right : TextAlign.left,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: head
@@ -588,30 +627,39 @@ class DataGrid extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
             child: Row(
               children: [
-                for (var i = 0; i < columns.length; i++) ...[
+                for (var i = 0; i < w.columns.length; i++) ...[
                   if (i > 0) const SizedBox(width: 12),
-                  cell(columns[i].toUpperCase(), i, head: true),
+                  cell(w.columns[i].toUpperCase(), i, head: true),
                 ],
               ],
             ),
           ),
           Divider(height: 1, color: c.line),
           ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: maxHeight),
+            constraints: BoxConstraints(maxHeight: w.maxHeight),
             child: ListView.builder(
+              controller: _scroll,
               shrinkWrap: true,
-              itemCount: rows.length,
-              itemExtent: 40,
+              itemCount: w.rows.length,
+              itemExtent: DataGrid.rowHeight,
               itemBuilder: (context, r) {
-                final hot = highlighted.contains(r);
+                final focus = r == w.focusRow;
+                final hot = focus || w.highlighted.contains(r);
                 return Container(
-                  color: hot ? c.accent.withValues(alpha: 0.16) : (r.isOdd ? c.cardSoft.withValues(alpha: 0.6) : null),
+                  decoration: BoxDecoration(
+                    color: focus
+                        ? c.accent.withValues(alpha: 0.32)
+                        : hot
+                        ? c.accent.withValues(alpha: 0.16)
+                        : (r.isOdd ? c.cardSoft.withValues(alpha: 0.6) : null),
+                    border: focus ? Border(left: BorderSide(color: c.accent, width: 4)) : null,
+                  ),
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   child: Row(
                     children: [
-                      for (var i = 0; i < columns.length; i++) ...[
+                      for (var i = 0; i < w.columns.length; i++) ...[
                         if (i > 0) const SizedBox(width: 12),
-                        cell(rows[r][i], i, bold: hot),
+                        cell(w.rows[r][i], i, bold: hot),
                       ],
                     ],
                   ),

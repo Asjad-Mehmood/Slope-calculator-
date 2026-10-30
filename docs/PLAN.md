@@ -14,14 +14,16 @@ details, lint rules, smoke test, Check workflow, V28 kept as the specification.
 - 63 tested cases, including the V28 examples and the Excel template, run on the computer and in a browser.
 - [Worked examples](worked-examples.md) to check by hand.
 
-## ✅ Phase 2: look and feel (waiting for approval of the screenshots)
+## ✅ Phase 2: look and feel (approved)
 Colours, bundled fonts, inputs, tiles, tables, cards, foldable optional sections, wide and phone
 layouts, keyboard and screen-reader use, text size. Screenshots for approval.
 
-## 🔜 Phase 3: main screens
-Start, calculator, results, profile with probe, chainage levels table, project plate, settings.
+## ✅ Phase 3: main screens
+Calculator with remembered inputs, results, profile with a probe, chainage levels with "Go to
+chainage", project plate, settings (theme, text size, stations, decimals, interval, allowable C).
+The calculator is the start screen; recent calculations come with accounts in phase 6.
 
-## ⬜ Phase 4: optional tools
+## 🔜 Phase 4: optional tools
 Crossfall with a cross-section drawing; digital level simulator; optical level trainer (runs only
 while open); practice mode.
 

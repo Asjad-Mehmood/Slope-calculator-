@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:slope_calculator/src/app.dart';
 import 'package:slope_calculator/src/brand.dart';
+import 'package:slope_calculator/src/state/store.dart';
 import 'package:slope_calculator/src/ui/settings.dart';
 import 'package:slope_calculator/src/ui/widgets.dart';
 
-Future<void> pumpAt(WidgetTester tester, Size size, {AppSettings? settings}) async {
+Future<void> pumpAt(WidgetTester tester, Size size, {Store? store}) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
-  await tester.pumpWidget(SlopeCalculatorApp(settings: settings));
+  await tester.pumpWidget(SlopeCalculatorApp(store: store ?? Store.memory()));
   await tester.pumpAndSettle();
 }
 
@@ -48,18 +49,19 @@ void main() {
   });
 
   testWidgets('dark mode and text size', (tester) async {
-    final settings = AppSettings();
-    await pumpAt(tester, const Size(1440, 1000), settings: settings);
+    final store = Store.memory();
+    await pumpAt(tester, const Size(1440, 1000), store: store);
     await tester.tap(find.byTooltip('Dark mode'));
     await tester.pumpAndSettle();
-    expect(settings.themeMode, ThemeMode.dark);
-    await tester.tap(find.byTooltip('Larger text'));
+    await tester.tap(find.byTooltip('Larger text').first);
     await tester.pumpAndSettle();
+    final settings = AppSettings(store);
+    expect(settings.themeMode, ThemeMode.dark);
     expect(settings.textScale, 1.05);
   });
 
   test('text size stays between 85 % and 130 %', () {
-    final s = AppSettings();
+    final s = AppSettings(Store.memory());
     for (var i = 0; i < 20; i++) {
       s.growText();
     }
@@ -69,6 +71,68 @@ void main() {
       s.shrinkText();
     }
     expect(s.textScale, 0.85);
+  });
+
+  Finder box(String label) =>
+      find.descendant(of: find.widgetWithText(NumberField, label), matching: find.byType(TextField));
+
+  testWidgets('inputs are remembered when the app opens again', (tester) async {
+    final store = Store.memory();
+    await pumpAt(tester, const Size(1440, 1000), store: store);
+    await tester.enterText(box('START LEVEL'), '110');
+    await tester.pump();
+    await tester.pumpWidget(const SizedBox());
+    await pumpAt(tester, const Size(1440, 1000), store: store);
+    expect(find.text('110'), findsOneWidget);
+  });
+
+  testWidgets('go to chainage gives the level there', (tester) async {
+    await pumpAt(tester, const Size(1440, 1000));
+    await tester.enterText(find.widgetWithText(TextField, 'Go to chainage, e.g. 1+125'), '1+125');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('100.625 m', findRichText: true), findsWidgets);
+  });
+
+  testWidgets('go to a chainage outside the line explains why not', (tester) async {
+    await pumpAt(tester, const Size(1440, 1000));
+    await tester.enterText(find.widgetWithText(TextField, 'Go to chainage, e.g. 1+125'), '2+000');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pump();
+    expect(find.textContaining('is outside the line'), findsOneWidget);
+  });
+
+  testWidgets('the project plate is saved and its name shows on the button', (tester) async {
+    final store = Store.memory();
+    await pumpAt(tester, const Size(1440, 1000), store: store);
+    await tester.tap(find.text('Project plate'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'Project name'), 'Ring Road');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ring Road'), findsOneWidget);
+    expect(store.readJson('projectPlate'), {'project': 'Ring Road'});
+  });
+
+  testWidgets('settings: stations counted from the start change the table', (tester) async {
+    await pumpAt(tester, const Size(1440, 1000));
+    await tester.tap(find.text('Settings').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('From the start'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Calculator').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Load example'));
+    await tester.pumpAndSettle();
+    expect(find.text('0+020'), findsOneWidget);
+  });
+
+  testWidgets('phone: the project plate opens full screen', (tester) async {
+    await pumpAt(tester, const Size(390, 844));
+    await tester.tap(find.byTooltip('Project plate'));
+    await tester.pumpAndSettle();
+    expect(find.text('Save'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   test('the version matches the release format', () {

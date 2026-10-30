@@ -3,23 +3,39 @@ import 'package:flutter/material.dart';
 import 'brand.dart';
 import 'screens/calculator_screen.dart';
 import 'screens/coming_soon_screen.dart';
+import 'screens/project_plate_screen.dart';
+import 'screens/settings_screen.dart';
+import 'state/calculation.dart';
+import 'state/project_plate.dart';
+import 'state/store.dart';
 import 'ui/app_shell.dart';
 import 'ui/settings.dart';
 import 'ui/theme.dart';
 
 /// The app's frame. Light and dark follow the computer until the user picks one.
 class SlopeCalculatorApp extends StatefulWidget {
-  const SlopeCalculatorApp({super.key, this.settings});
+  const SlopeCalculatorApp({super.key, this.store});
 
-  /// Passed in by tests; the app makes its own otherwise
-  final AppSettings? settings;
+  /// Where settings and inputs are remembered; tests pass [Store.memory]
+  final Store? store;
 
   @override
   State<SlopeCalculatorApp> createState() => _SlopeCalculatorAppState();
 }
 
 class _SlopeCalculatorAppState extends State<SlopeCalculatorApp> {
-  late final AppSettings _settings = widget.settings ?? AppSettings();
+  late final Store _store = widget.store ?? Store.memory();
+  late final AppSettings _settings = AppSettings(_store);
+  late final Calculation _calculation = Calculation(_store, _settings);
+  late final ProjectPlate _plate = ProjectPlate(_store);
+
+  @override
+  void dispose() {
+    _calculation.dispose();
+    _plate.dispose();
+    _settings.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +51,7 @@ class _SlopeCalculatorAppState extends State<SlopeCalculatorApp> {
           data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(_settings.textScale)),
           child: child!,
         ),
-        home: HomeScreen(settings: _settings),
+        home: HomeScreen(settings: _settings, calculation: _calculation, plate: _plate),
       ),
     );
   }
@@ -70,8 +86,10 @@ const destinations = [
 ];
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.settings});
+  const HomeScreen({super.key, required this.settings, required this.calculation, required this.plate});
   final AppSettings settings;
+  final Calculation calculation;
+  final ProjectPlate plate;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -83,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      const CalculatorScreen(),
+      CalculatorScreen(calculation: widget.calculation),
       const ComingSoonScreen(
         icon: Icons.add_road_outlined,
         phase: 4,
@@ -99,27 +117,14 @@ class _HomeScreenState extends State<HomeScreen> {
         phase: 6,
         text: 'Sign in with your Excel to KML account to save calculations and open them on any device.',
       ),
-      const ComingSoonScreen(
-        icon: Icons.tune_outlined,
-        phase: 3,
-        text: 'Theme, text size, default decimals and interval, and the allowable misclosure.',
-      ),
+      SettingsScreen(settings: widget.settings),
     ];
     return AppShell(
       destinations: destinations,
       selected: _page,
       onSelect: (i) => setState(() => _page = i),
       settings: widget.settings,
-      headerActions: [
-        if (_page == 0)
-          OutlinedButton.icon(
-            onPressed: () =>
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(const SnackBar(content: Text('The project plate comes in phase 3.'))),
-            icon: const Icon(Icons.badge_outlined, size: 19),
-            label: const Text('Project plate'),
-          ),
-      ],
+      headerActions: [if (_page == 0) ProjectPlateButton(plate: widget.plate)],
       child: IndexedStack(index: _page, children: pages),
     );
   }

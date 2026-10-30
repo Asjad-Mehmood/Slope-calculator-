@@ -2,6 +2,18 @@
 
 ## 1.0.0 (in development)
 
+### Phase 3: main screens
+- The app remembers, on this device, the last inputs, the settings and the project plate, and
+  opens where it was left (Windows: the user's AppData; web: the browser's storage).
+- Profile probe: press or drag on the profile, or use the slider, to read the level at any
+  chainage.
+- Chainage levels: "Go to chainage" (`1+125` or `1125`) gives the level there and brings the
+  nearest station into view.
+- Project plate: the 16 fields of the Excel template, in a dialog on a computer and a full page on
+  a phone; the header button shows the project name and how many fields are filled.
+- Settings: theme (computer, light, dark), text size, stations (round chainages or from the start),
+  default decimals and interval, allowable misclosure C, and reset.
+
 ### Phase 2: look and feel
 - Light and dark themes in the logo's navy and survey gold; follows the computer, with a switch
   in the header. Text size 85 % to 130 % (A− / A+).
