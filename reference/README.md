@@ -13,7 +13,8 @@ specification for what the app does. It is **not** part of the app and is never 
 ## Known problems in V28 (each is fixed in the rewrite, with a test)
 
 1 and 2 are fixed in the calculation engine (phase 1, `test/calc/level_run_test.dart`), 6 with the
-optional tools (phase 4); the rest come with the reports, the web app and accounts.
+optional tools (phase 4), 5 and 7 with the reports (phase 5); the rest come with the web app and
+accounts.
 
 
 1. **Max sight does nothing.** The input and the drawing's sight line share the id `dlSight`, so the code reads the line, not the input.

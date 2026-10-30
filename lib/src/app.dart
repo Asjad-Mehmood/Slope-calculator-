@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'brand.dart';
+import 'export/export_button.dart';
 import 'screens/calculator_screen.dart';
 import 'screens/coming_soon_screen.dart';
 import 'screens/crossfall_screen.dart';
@@ -8,6 +9,7 @@ import 'screens/level_screen.dart';
 import 'screens/project_plate_screen.dart';
 import 'screens/settings_screen.dart';
 import 'state/calculation.dart';
+import 'state/level_run_state.dart';
 import 'state/project_plate.dart';
 import 'state/store.dart';
 import 'ui/app_shell.dart';
@@ -30,11 +32,13 @@ class _SlopeCalculatorAppState extends State<SlopeCalculatorApp> {
   late final AppSettings _settings = AppSettings(_store);
   late final Calculation _calculation = Calculation(_store, _settings);
   late final ProjectPlate _plate = ProjectPlate(_store);
+  final _levelRun = LevelRunState();
 
   @override
   void dispose() {
     _calculation.dispose();
     _plate.dispose();
+    _levelRun.dispose();
     _settings.dispose();
     super.dispose();
   }
@@ -53,7 +57,13 @@ class _SlopeCalculatorAppState extends State<SlopeCalculatorApp> {
           data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(_settings.textScale)),
           child: child!,
         ),
-        home: HomeScreen(settings: _settings, calculation: _calculation, plate: _plate, store: _store),
+        home: HomeScreen(
+          settings: _settings,
+          calculation: _calculation,
+          plate: _plate,
+          store: _store,
+          levelRun: _levelRun,
+        ),
       ),
     );
   }
@@ -94,8 +104,10 @@ class HomeScreen extends StatefulWidget {
     required this.calculation,
     required this.plate,
     required this.store,
+    required this.levelRun,
   });
   final AppSettings settings;
+  final LevelRunState levelRun;
   final Store store;
   final Calculation calculation;
   final ProjectPlate plate;
@@ -106,13 +118,24 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _page = 0;
+  late final _exporter = Exporter(
+    calculation: widget.calculation,
+    plate: widget.plate,
+    store: widget.store,
+    levelRun: widget.levelRun,
+  );
 
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
       CalculatorScreen(calculation: widget.calculation),
       CrossfallScreen(store: widget.store),
-      LevelScreen(calculation: widget.calculation, settings: widget.settings, store: widget.store),
+      LevelScreen(
+        calculation: widget.calculation,
+        settings: widget.settings,
+        store: widget.store,
+        levelRun: widget.levelRun,
+      ),
       const ComingSoonScreen(
         icon: Icons.folder_open_outlined,
         phase: 6,
@@ -125,7 +148,13 @@ class _HomeScreenState extends State<HomeScreen> {
       selected: _page,
       onSelect: (i) => setState(() => _page = i),
       settings: widget.settings,
-      headerActions: [if (_page == 0) ProjectPlateButton(plate: widget.plate)],
+      headerActions: [
+        if (_page == 0) ...[
+          ProjectPlateButton(plate: widget.plate),
+          const SizedBox(width: 8),
+          ExportButton(exporter: _exporter),
+        ],
+      ],
       child: IndexedStack(
         index: _page,
         children: [

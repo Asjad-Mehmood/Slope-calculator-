@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../state/calculation.dart';
+import '../state/level_run_state.dart';
 import '../state/store.dart';
 import '../ui/settings.dart';
 import '../ui/theme.dart';
@@ -9,7 +10,14 @@ import 'digital_level_screen.dart';
 import 'optical_trainer_screen.dart';
 
 class LevelScreen extends StatelessWidget {
-  const LevelScreen({super.key, required this.calculation, required this.settings, required this.store});
+  const LevelScreen({
+    super.key,
+    required this.calculation,
+    required this.settings,
+    required this.store,
+    required this.levelRun,
+  });
+  final LevelRunState levelRun;
   final Calculation calculation;
   final AppSettings settings;
   final Store store;
@@ -46,7 +54,7 @@ class LevelScreen extends StatelessWidget {
           Expanded(
             child: TabBarView(
               children: [
-                DigitalLevelScreen(calculation: calculation, settings: settings, store: store),
+                DigitalLevelScreen(calculation: calculation, settings: settings, store: store, levelRun: levelRun),
                 const OpticalTrainerScreen(),
               ],
             ),

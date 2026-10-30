@@ -3,19 +3,30 @@
 // of Instrument or Rise & Fall) and the checks at the end. Training and checking only: it doesn't
 // connect to or copy any instrument.
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../calc/calc.dart';
+import '../export/csv_export.dart';
+import '../export/save_file.dart';
 import '../state/calculation.dart';
+import '../state/level_run_state.dart';
 import '../state/store.dart';
 import '../ui/settings.dart';
 import '../ui/theme.dart';
 import '../ui/widgets.dart';
 
 class DigitalLevelScreen extends StatefulWidget {
-  const DigitalLevelScreen({super.key, required this.calculation, required this.settings, required this.store});
+  const DigitalLevelScreen({
+    super.key,
+    required this.calculation,
+    required this.settings,
+    required this.store,
+    required this.levelRun,
+  });
+  final LevelRunState levelRun;
   final Calculation calculation;
   final AppSettings settings;
   final Store store;
@@ -87,6 +98,7 @@ class _DigitalLevelScreenState extends State<DigitalLevelScreen> with SingleTick
   void _reset() {
     if (!mounted) return;
     _ticker.stop();
+    widget.levelRun.clear();
     setState(() => _taken = 0);
   }
 
@@ -100,7 +112,10 @@ class _DigitalLevelScreenState extends State<DigitalLevelScreen> with SingleTick
     final run = _run().$1;
     if (run == null) return;
     setState(() => _taken = math.min(_taken + 1, run.readings.length));
-    if (_taken >= run.readings.length) _ticker.stop();
+    if (_taken >= run.readings.length) {
+      _ticker.stop();
+      widget.levelRun.finished(run, _method);
+    }
   }
 
   void _play() {
@@ -295,6 +310,8 @@ class _DigitalLevelScreenState extends State<DigitalLevelScreen> with SingleTick
             onSelectionChanged: (v) {
               setState(() => _method = v.first);
               _saveOptions();
+              final r = _run().$1;
+              if (r != null && _taken >= r.readings.length) widget.levelRun.finished(r, _method);
             },
           ),
         ],
@@ -446,8 +463,32 @@ class _DigitalLevelScreenState extends State<DigitalLevelScreen> with SingleTick
             Notice(
               '${run.changePointsAdded} change points were added between stations so every reading stays on the 4 m staff.',
             ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              OutlinedButton.icon(
+                onPressed: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  final saved = await saveFile(
+                    'Level_Book_${run.slope.startChainage.round()}-${run.slope.endChainage.round()}.csv',
+                    Uint8List.fromList(levelBookCsv(run, b)),
+                    mime: 'text/csv',
+                    extension: 'csv',
+                  );
+                  messenger.showSnackBar(
+                    SnackBar(content: Text(saved == null ? 'Not saved' : 'Level book saved: $saved')),
+                  );
+                },
+                icon: const Icon(Icons.table_rows_outlined, size: 19),
+                label: const Text('Level book (.csv)'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
           Text(
+            'The Excel and PDF reports on the Calculator now include this level book. '
             'A training and checking simulator. It does not connect to or copy any instrument.',
             style: TextStyle(color: c.muted, fontSize: 12.5),
           ),

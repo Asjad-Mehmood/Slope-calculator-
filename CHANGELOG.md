@@ -2,6 +2,20 @@
 
 ## 1.0.0 (in development)
 
+### Phase 5: reports
+- Export menu on the Calculator: Excel report, PDF report, Print, and the chainage levels as CSV.
+  Windows asks where to save; the web app downloads. Everything is made inside the app, offline.
+- Excel report like the professional template: Project Plate, Slope Summary, Chainage Levels,
+  Crossfall, **Level Book** (new: the last run taken to the end on the Level page, by HI or Rise &
+  Fall, with design levels, differences, adjusted levels and the checks) and the QA QC Checklist.
+  Numbers are stored as numbers with the chosen decimals.
+- PDF report (A4): the project plate, results, the working, the profile, the chainage levels, the
+  crossfall, the level book with its checks, and Surveyed / Checked / Approved by boxes with the
+  names from the project plate; page numbers and the app version on every page.
+- CSV: chainage levels (the V28 columns) and, on the Level page, the level book; with the byte
+  order mark Excel needs.
+- File names from the project name and date, e.g. `Ring_Road_Slope_Report_2026-10-30.pdf`.
+
 ### Phase 4: optional tools
 - Crossfall: centreline level, slope % and offset on each side, falling or rising away; results,
   the working written out, and a cross-section drawing. Remembered on the device.

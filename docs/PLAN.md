@@ -28,11 +28,12 @@ Crossfall with a cross-section drawing; digital level run (step or play, instrum
 book by HI or Rise & Fall, checks and closing error); optical level trainer with an E-pattern
 staff, watch and practise modes. Animations run only while their page is on screen.
 
-## 🔜 Phase 5: reports (offline)
-Excel (Project Plate, Summary, Chainage Levels, Crossfall, Level Book), CSV, PDF with sign-off
-boxes, print, optional KML.
+## ✅ Phase 5: reports (offline)
+Excel (Project Plate, Slope Summary, Chainage Levels, Crossfall, Level Book, QA QC Checklist), CSV
+(chainage levels, level book), PDF with the profile and sign-off boxes, print. Save As on Windows,
+download in the browser. KML needs coordinates the app doesn't ask for yet: left for later.
 
-## ⬜ Phase 6: account and dashboard
+## 🔜 Phase 6: account and dashboard
 Website APIs (`api/slope/jobs`, usage) and admin page in the KML-WEBSITE- repository; sign-up with
 the emailed code, sign-in, Google sign-in; saved calculations, offline queue.
 
