@@ -78,16 +78,24 @@ class AppShell extends StatelessWidget {
       return Scaffold(
         body: Row(
           children: [
-            NavigationRail(
-              backgroundColor: c.card,
-              selectedIndex: selected,
-              onDestinationSelected: onSelect,
-              labelType: NavigationRailLabelType.all,
-              leading: const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: _Logo(size: 40)),
-              indicatorColor: c.accent.withValues(alpha: 0.25),
-              destinations: [
-                for (final d in destinations) NavigationRailDestination(icon: Icon(d.icon), label: Text(d.label)),
-              ],
+            // the rail has a fixed width: its labels stop growing at 130 % text
+            MediaQuery.withClampedTextScaling(
+              maxScaleFactor: 1.3,
+              child: NavigationRail(
+                backgroundColor: c.card,
+                selectedIndex: selected,
+                onDestinationSelected: onSelect,
+                labelType: NavigationRailLabelType.all,
+                leading: const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: _Logo(size: 40)),
+                indicatorColor: c.accent.withValues(alpha: 0.25),
+                destinations: [
+                  for (final d in destinations)
+                    NavigationRailDestination(
+                      icon: Icon(d.icon, key: ValueKey('nav ${d.label}')),
+                      label: Text(d.label),
+                    ),
+                ],
+              ),
             ),
             VerticalDivider(width: 1, color: c.line),
             Expanded(child: body),
@@ -98,14 +106,24 @@ class AppShell extends StatelessWidget {
     final c = context.colors;
     return Scaffold(
       body: SafeArea(bottom: false, child: body),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: selected,
-        onDestinationSelected: onSelect,
-        backgroundColor: c.card,
-        indicatorColor: c.accent.withValues(alpha: 0.28),
-        height: 68,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        destinations: [for (final d in destinations) NavigationDestination(icon: Icon(d.icon), label: d.label)],
+      // the bar's labels stop growing at 130 % text, so five still fit side by side
+      bottomNavigationBar: MediaQuery.withClampedTextScaling(
+        maxScaleFactor: 1.3,
+        child: NavigationBar(
+          selectedIndex: selected,
+          onDestinationSelected: onSelect,
+          backgroundColor: c.card,
+          indicatorColor: c.accent.withValues(alpha: 0.28),
+          height: 68,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          destinations: [
+            for (final d in destinations)
+              NavigationDestination(
+                icon: Icon(d.icon, key: ValueKey('nav ${d.label}')),
+                label: d.label,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -139,8 +157,10 @@ class _Sidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    // wider with larger text, so the names still fit
+    final grow = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.6);
     return Container(
-      width: 252,
+      width: 252 * grow,
       decoration: BoxDecoration(
         color: c.card,
         border: Border(right: BorderSide(color: c.line)),
@@ -180,9 +200,16 @@ class _Sidebar extends StatelessWidget {
             ),
             Divider(height: 1, color: c.line),
             const SizedBox(height: 10),
-            for (var i = 0; i < destinations.length; i++)
-              _SideItem(destination: destinations[i], selected: i == selected, onTap: () => onSelect(i)),
-            const Spacer(),
+            // scrolls when large text makes the menu taller than the window
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  for (var i = 0; i < destinations.length; i++)
+                    _SideItem(destination: destinations[i], selected: i == selected, onTap: () => onSelect(i)),
+                ],
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
               child: ListenableBuilder(
@@ -236,14 +263,23 @@ class _SideItem extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
               child: Row(
                 children: [
-                  Icon(destination.icon, size: 21, color: selected ? c.ink : c.muted),
+                  Icon(
+                    destination.icon,
+                    key: ValueKey('nav ${destination.label}'),
+                    size: 21,
+                    color: selected ? c.ink : c.muted,
+                  ),
                   const SizedBox(width: 12),
-                  Text(
-                    destination.label,
-                    style: TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-                      color: selected ? c.ink : c.muted,
+                  Expanded(
+                    child: Text(
+                      destination.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                        color: selected ? c.ink : c.muted,
+                      ),
                     ),
                   ),
                 ],
@@ -274,53 +310,70 @@ class _Header extends StatelessWidget {
         color: c.background,
         border: Border(bottom: BorderSide(color: c.line)),
       ),
-      child: Row(
-        children: [
-          if (compact) ...[const _Logo(size: 32), const SizedBox(width: 10)],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  compact ? page.label : page.title,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: compact ? 19 : 24),
+      child: LayoutBuilder(
+        builder: (context, box) {
+          final width = box.maxWidth;
+          return Row(
+            children: [
+              if (compact) ...[const _Logo(size: 32), const SizedBox(width: 10)],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      compact ? page.label : page.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: compact ? 19 : 24),
+                    ),
+                    if (!compact)
+                      Text(
+                        page.subtitle,
+                        style: TextStyle(color: c.muted, fontSize: 13.5, fontWeight: FontWeight.w500),
+                      ),
+                  ],
                 ),
-                if (!compact)
-                  Text(
-                    page.subtitle,
-                    style: TextStyle(color: c.muted, fontSize: 13.5, fontWeight: FontWeight.w500),
+              ),
+              // the page's buttons, then text size and light / dark, at the right: on a narrow window or
+              // with large text they wrap onto more lines (within two thirds of the width) instead of
+              // running off the edge
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: width * 0.6),
+                child: ListenableBuilder(
+                  listenable: settings,
+                  builder: (context, _) => Wrap(
+                    alignment: WrapAlignment.end,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: compact ? 0 : 8,
+                    runSpacing: 4,
+                    children: [
+                      ...actions,
+                      if (!compact) ...[
+                        IconButton(
+                          tooltip: 'Smaller text',
+                          onPressed: settings.canShrinkText ? settings.shrinkText : null,
+                          icon: const Icon(Icons.text_decrease_rounded),
+                        ),
+                        IconButton(
+                          tooltip: 'Larger text',
+                          onPressed: settings.canGrowText ? settings.growText : null,
+                          icon: const Icon(Icons.text_increase_rounded),
+                        ),
+                      ],
+                      IconButton(
+                        tooltip: themeLabel,
+                        onPressed: () => settings.cycleTheme(brightness),
+                        icon: Icon(
+                          brightness == Brightness.light ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+                        ),
+                      ),
+                    ],
                   ),
-              ],
-            ),
-          ),
-          ...actions,
-          if (!compact) const SizedBox(width: 8),
-          ListenableBuilder(
-            listenable: settings,
-            builder: (context, _) => Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (!compact) ...[
-                  IconButton(
-                    tooltip: 'Smaller text',
-                    onPressed: settings.canShrinkText ? settings.shrinkText : null,
-                    icon: const Icon(Icons.text_decrease_rounded),
-                  ),
-                  IconButton(
-                    tooltip: 'Larger text',
-                    onPressed: settings.canGrowText ? settings.growText : null,
-                    icon: const Icon(Icons.text_increase_rounded),
-                  ),
-                ],
-                IconButton(
-                  tooltip: themeLabel,
-                  onPressed: () => settings.cycleTheme(brightness),
-                  icon: Icon(brightness == Brightness.light ? Icons.dark_mode_outlined : Icons.light_mode_outlined),
                 ),
-              ],
-            ),
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }

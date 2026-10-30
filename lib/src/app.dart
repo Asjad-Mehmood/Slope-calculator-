@@ -87,10 +87,16 @@ class _SlopeCalculatorAppState extends State<SlopeCalculatorApp> {
         theme: buildTheme(Brightness.light),
         darkTheme: buildTheme(Brightness.dark),
         themeMode: _settings.themeMode,
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(_settings.textScale)),
-          child: child!,
-        ),
+        // the app's own text size (A− / A+) on top of the system's (Windows or phone accessibility),
+        // up to twice the normal size so the layouts still fit
+        builder: (context, child) {
+          final system = MediaQuery.textScalerOf(context).scale(100) / 100;
+          return MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear((system * _settings.textScale).clamp(0.85, 2.0))),
+            child: child!,
+          );
+        },
         home: _SignedInOnly(
           account: _account,
           settings: _settings,

@@ -117,17 +117,22 @@ class _ProjectPlateFormState extends State<ProjectPlateForm> {
           decoration: BoxDecoration(
             border: Border(top: BorderSide(color: c.line)),
           ),
-          child: Row(
+          // the note, then the buttons: side by side, or the buttons under the note when narrow
+          child: Wrap(
+            alignment: WrapAlignment.end,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 10,
+            runSpacing: 10,
             children: [
-              Expanded(
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
                 child: Text(
-                  'Kept on this device. With an account (phase 6) it is saved with each calculation.',
+                  'Kept on this device, printed on every report and saved with each calculation you keep in '
+                  'your account.',
                   style: TextStyle(color: c.muted, fontSize: 12.5),
                 ),
               ),
-              const SizedBox(width: 12),
               OutlinedButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-              const SizedBox(width: 10),
               FilledButton.icon(onPressed: _save, icon: const Icon(Icons.check_rounded), label: const Text('Save')),
             ],
           ),
@@ -162,7 +167,13 @@ class ProjectPlateButton extends StatelessWidget {
               label: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(plate.isEmpty ? 'Project plate' : _short(plate.projectName)),
+                  Flexible(
+                    child: Text(
+                      plate.isEmpty ? 'Project plate' : _short(plate.projectName),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                   if (!plate.isEmpty) ...[const SizedBox(width: 8), Tag('${plate.filled}')],
                 ],
               ),

@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.0.4
+
+### Phase 9: testing
+- The system text size is followed, with the app's A− / A+ on top, up to 200 %; every page fits
+  at 5 sizes × 3 text sizes × light and dark (a test checks all 30).
+- Fixed for large text or narrow windows: the menu, rail and bottom bar, the page header, card
+  headers, Settings rows, the probe's level, the Project plate button and its footer (which still
+  said "phase 6").
+- Excel reports store clean numbers instead of binary arithmetic noise.
+- Each sign-in field is named by its label alone for screen readers.
+- Check also runs the web app in Chromium, Firefox and WebKit (wide and phone-sized, offline) and
+  installs, opens and uninstalls the Windows program on a machine with no graphics card.
+  `tool/check_exports.sh` opens the reports and the template in LibreOffice and the PDF tools.
+  docs/TESTING.md has the checklist for real devices.
+
+### Phase 10: manual and documents
+- The user manual on the website (/slope-calculation/manual) and as a PDF, with screenshots from
+  `e2e/manual_shots.mjs`.
+- `docs/Slope-Calculator-Template.xlsx` (`tool/excel_template.dart`): the calculation in Excel
+  formulas, checked against the app.
+
 ## 1.0.3
 
 - Sign in first: on Windows and on the web the app opens on the sign-in (email and password,

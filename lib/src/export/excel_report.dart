@@ -71,7 +71,9 @@ class _Sheet {
       final v = cells[c];
       final value = switch (v) {
         null => null,
-        final double d => DoubleCellValue(d),
+        // to 9 decimals, so a cell holds −0.3 and not −0.299999999999997 when copied or used in
+        // a formula (the column's format still decides what is shown)
+        final double d => DoubleCellValue(d.isFinite ? double.parse(d.toStringAsFixed(9)) : d),
         final int i => IntCellValue(i),
         _ => TextCellValue('$v'),
       };

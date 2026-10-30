@@ -51,11 +51,13 @@ class _SectionCardState extends State<SectionCard> {
           Icon(_open ? Icons.expand_less_rounded : Icons.expand_more_rounded, color: c.muted, semanticLabel: null),
       ],
     );
-    // the extra on the right goes under the title when the card is narrow
+    // the extra on the right goes under the title when the card is narrow (sooner with larger
+    // text), and never takes more than half the width beside it
+    final scale = MediaQuery.textScalerOf(context).scale(1);
     final head = widget.trailing == null
         ? title
         : LayoutBuilder(
-            builder: (context, box) => box.maxWidth < 560
+            builder: (context, box) => box.maxWidth < 560 * scale
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [title, const SizedBox(height: 10), widget.trailing!],
@@ -64,7 +66,9 @@ class _SectionCardState extends State<SectionCard> {
                     children: [
                       Expanded(child: title),
                       const SizedBox(width: 12),
-                      widget.trailing!,
+                      Flexible(
+                        child: Align(alignment: Alignment.centerRight, child: widget.trailing),
+                      ),
                     ],
                   ),
           );

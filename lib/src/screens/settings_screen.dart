@@ -33,17 +33,20 @@ class SettingsScreen extends StatelessWidget {
                   Text(text, style: TextStyle(color: c.muted, fontSize: 13, height: 1.4)),
                 ],
               );
-              if (box.maxWidth < 620) {
+              // a choice can't wrap: on a narrow screen or with large text it goes under its words,
+              // and shrinks rather than runs off the edge
+              final fitted = FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: control);
+              if (box.maxWidth < 620 * MediaQuery.textScalerOf(context).scale(1)) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [words, const SizedBox(height: 10), control],
+                  children: [words, const SizedBox(height: 10), fitted],
                 );
               }
               return Row(
                 children: [
                   Expanded(child: words),
                   const SizedBox(width: 20),
-                  control,
+                  Flexible(child: fitted),
                 ],
               );
             },

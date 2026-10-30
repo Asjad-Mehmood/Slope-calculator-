@@ -51,12 +51,16 @@ single instance, and the Build and Release workflow on a version tag that publis
 and checks the published download. Every push also builds a test installer (Actions → Artifacts).
 Code signing waits for the certificate.
 
-## ⬜ Phase 9: testing
-Windows 10 and 11, display scaling, a PC with no graphics card, Remote Desktop; browsers and
-phones; exports in Excel, LibreOffice and Adobe Reader; accounts and offline.
+## ✅ Phase 9: testing
+Every page at 5 sizes × 3 system text sizes × light and dark; the web app in Chromium, Firefox
+and WebKit, wide and phone-sized, and offline; the Windows program installed, opened and
+uninstalled on a machine with no graphics card; the reports opened in LibreOffice and the PDF
+tools. Findings fixed; what needs real devices is a checklist in [TESTING.md](TESTING.md).
 
-## ⬜ Phase 10: manual and documents
-New manual (PDF and web page), worked examples, updated Excel template, release notes.
+## ✅ Phase 10: manual and documents
+User manual on the website (/slope-calculation/manual) and as a PDF, the worked examples in it,
+the Excel template in formulas (`docs/Slope-Calculator-Template.xlsx`, checked against the app in
+LibreOffice), release notes for 1.0.3 and 1.0.4.
 
 ## ⬜ Phase 11: release 1.0.0
 Beta for testing, fixes, release, product page live, optional announcement email.
