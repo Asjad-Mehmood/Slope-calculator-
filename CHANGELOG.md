@@ -2,6 +2,15 @@
 
 ## 1.0.0 (in development)
 
+### Phase 7: web version
+- `tool/web_build.sh <version>` builds the web app for exceltokml.com/slope-calculation/app:
+  CanvasKit bundled instead of loaded from Google, the files only a WebAssembly build or debugging
+  needs left out (21 MB in all).
+- Works offline once opened: `sw.js` keeps the app's files and, of the two CanvasKit builds, only
+  the one the browser uses. The page always comes fresh when online. Installable from the browser
+  (Install app / Add to Home Screen).
+- The Check workflow builds the web app the same way.
+
 ### Phase 8: Windows program and GitHub build
 - Installer `SlopeCalculator-Setup.exe` (NSIS): installs for the user without administrator rights
   to `%LOCALAPPDATA%\SlopeCalculator`, with Start menu and desktop shortcuts and an entry in
