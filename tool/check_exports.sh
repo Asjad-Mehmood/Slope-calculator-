@@ -57,4 +57,20 @@ done
 ok "report.pdf: A4, $pages pages, text readable and searchable"
 pdffonts report.pdf | awk 'NR>2 && $0 ~ /Inter|JetBrains/ && $(NF-4) != "yes" {exit 1}' || fail 'a font is not embedded'
 ok 'report.pdf: its fonts are embedded'
+# The Excel template: LibreOffice recalculates its formulas and gets the app's numbers
+(cd "$ROOT" && dart run tool/excel_template.dart "$OUT/t1/template.xlsx" >/dev/null && \
+  dart run tool/excel_template.dart "$OUT/t2/template.xlsx" --example2 >/dev/null)
+for t in t1 t2; do
+  (cd "$t" && soffice --headless --norestore --convert-to 'csv:Text - txt - csv (StarCalc):44,34,76,1,,0,false,true,false,false,false,-1' template.xlsx >/dev/null 2>&1)
+done
+T1="$(ls t1/*.csv)"; T2="$(ls t2/*.csv)"
+grep -q '^Slope %,-1.5,' "$T1" && grep -q '^Stations,14,' "$T1" && grep -q '^1120,1+120.000,120,100.7,-1.8,' "$T1" \
+  && grep -q '^1250,1+250.000,250,98.75,-3.75,' "$T1" || fail 'template: the V28 example does not give the app levels'
+grep -q ',Level,9.93,9.9125$' "$T1" || fail 'template: the crossfall levels are not 9.930 and 9.9125'
+ok 'Excel template: the V28 example gives the app slope, 14 stations and levels, and crossfall'
+grep -q '^Stations,20,' "$T2" && grep -q '^379.29,0+379.290,379.29,0.6,-1.3,' "$T2" || fail 'template: the template example does not end at 0+379.290, 0.600'
+lvl=$(awk -F, '$1=="360" {printf "%.3f", $4}' "$T2")
+[ "$lvl" = 0.666 ] || fail "template: the level at 0+360 is $lvl, the app says 0.666"
+ok 'Excel template: the template example gives 20 stations and the app level at 0+360 (0.666)'
+
 echo 'Reports open and read correctly in LibreOffice and the PDF tools'
