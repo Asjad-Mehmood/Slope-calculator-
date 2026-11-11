@@ -142,15 +142,35 @@ List<int> buildExcelReport(ReportData d) {
     ..values(['Summary', s.summary, ''])
     ..values(['Review note', 'Confirm design criteria and an independent check before construction use.', '']);
 
-  // Chainage Levels
+  // The sides, with the centreline
+  final f = d.formation;
+  if (f != null && f.sides.mode != SidesMode.none) {
+    String dir(CrossfallSide side) => side.direction == CrossfallDirection.fallAway ? 'falls away' : 'rises away';
+    for (final (name, on, side, diff) in [
+      ('Left', f.sides.mode.left, f.sides.left, f.sides.leftDifference),
+      ('Right', f.sides.mode.right, f.sides.right, f.sides.rightDifference),
+    ]) {
+      if (!on) {
+        sum.values(['$name side', 'OFF', 'Not worked out']);
+        continue;
+      }
+      sum
+        ..values(['$name offset', side.distance, 'm from the centreline'], formats: {1: '0.000'})
+        ..values(['$name crossfall', side.slopePercent.abs(), '% · ${dir(side)}'], formats: {1: '0.00'})
+        ..values(['$name level difference ΔRL', diff, 'm (offset × crossfall ÷ 100)'], formats: {1: '0.0000'});
+    }
+  }
+
+  // Chainage Levels: the screen's one table
+  final t = d.levels;
   final levels = _Sheet(excel['Chainage Levels'])
-    ..widths([18, 24, 16, 24])
-    ..title('CHAINAGE LEVELS', 4)
-    ..heads(['CHAINAGE', 'DISTANCE FROM START (m)', 'LEVEL (m)', 'CHANGE FROM START (m)']);
-  for (final st in s.stations) {
+    ..widths([18, for (var i = 1; i < t.heads.length; i++) 20])
+    ..title('CHAINAGE LEVELS', t.heads.length)
+    ..heads([for (final h in t.heads) h.toUpperCase()]);
+  for (var i = 0; i < t.labels.length; i++) {
     levels.values(
-      [st.label, st.distanceFromStart, st.level, st.changeFromStart],
-      formats: {1: '0.000', 2: dec, 3: dec},
+      [t.labels[i], ...t.numbers[i]],
+      formats: {for (var j = 0; j < t.decimals.length; j++) j + 1: _decimals(t.decimals[j])},
     );
   }
 

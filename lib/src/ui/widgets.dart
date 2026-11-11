@@ -569,6 +569,10 @@ class DataGrid extends StatefulWidget {
     this.highlighted = const {},
     this.focusRow,
     this.maxHeight = 420,
+    this.centred = const {},
+    this.accentColumn,
+    this.groups,
+    this.minWidth = 0,
   });
 
   final List<String> columns;
@@ -581,6 +585,18 @@ class DataGrid extends StatefulWidget {
   final Set<int> highlighted;
   final int? focusRow;
   final double maxHeight;
+
+  /// Columns written in the middle of their cell (the levels of the formation table)
+  final Set<int> centred;
+
+  /// A column shaded in the accent colour and written in bold: the centreline level
+  final int? accentColumn;
+
+  /// A label over each column, above the headings (LEFT SIDE, CENTRELINE …); null for none
+  final List<String>? groups;
+
+  /// Narrower than this, the table scrolls sideways instead of squeezing its columns
+  final double minWidth;
 
   static const rowHeight = 40.0;
 
@@ -621,25 +637,53 @@ class _DataGridState extends State<DataGrid> {
   Widget build(BuildContext context) {
     final c = context.colors;
     final w = widget;
-    Widget cell(String text, int col, {bool head = false, bool bold = false}) => Expanded(
-      flex: col == 0 ? 6 : 5,
-      child: Text(
-        text,
-        textAlign: w.numeric.contains(col) ? TextAlign.right : TextAlign.left,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: head
-            ? TextStyle(color: c.muted, fontSize: 11.5, fontWeight: FontWeight.w700, letterSpacing: 0.8)
-            : TextStyle(
-                color: c.ink,
-                fontSize: 14,
-                fontWeight: bold || col == 0 ? FontWeight.w600 : FontWeight.w500,
-                fontFeatures: tabular,
-              ),
+    final accent = w.accentColumn;
+    TextAlign align(int col) => w.centred.contains(col)
+        ? TextAlign.center
+        : w.numeric.contains(col)
+        ? TextAlign.right
+        : TextAlign.left;
+    Widget cell(String text, int col, {bool head = false, bool bold = false, bool group = false}) {
+      final hot = col == accent;
+      final style = group
+          ? TextStyle(
+              color: hot ? c.onAccent : c.muted,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.1,
+            )
+          : head
+          ? TextStyle(color: hot ? c.ink : c.muted, fontSize: 11.5, fontWeight: FontWeight.w700, letterSpacing: 0.8)
+          : TextStyle(
+              color: c.ink,
+              fontSize: 14,
+              fontWeight: hot ? FontWeight.w800 : (bold || col == 0 ? FontWeight.w600 : FontWeight.w500),
+              fontFeatures: tabular,
+            );
+      return Expanded(
+        flex: col == 0 ? 6 : 5,
+        child: Container(
+          alignment: switch (align(col)) {
+            TextAlign.center => Alignment.center,
+            TextAlign.right => Alignment.centerRight,
+            _ => Alignment.centerLeft,
+          },
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          color: hot ? (group ? c.accent : c.accent.withValues(alpha: head ? 0.22 : 0.12)) : null,
+          child: Text(text, textAlign: align(col), maxLines: 1, overflow: TextOverflow.ellipsis, style: style),
+        ),
+      );
+    }
+
+    Widget line(List<Widget> cells, {double? height, EdgeInsets padding = EdgeInsets.zero}) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6).add(padding),
+      child: SizedBox(
+        height: height,
+        child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: cells),
       ),
     );
 
-    return Container(
+    final table = Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: c.line),
@@ -647,17 +691,18 @@ class _DataGridState extends State<DataGrid> {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
+          if (w.groups != null)
+            Container(
+              color: c.cardSoft,
+              child: line([
+                for (var i = 0; i < w.columns.length; i++) cell(w.groups![i], i, head: true, group: true),
+              ], height: 26),
+            ),
           Container(
             color: c.cardSoft,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-            child: Row(
-              children: [
-                for (var i = 0; i < w.columns.length; i++) ...[
-                  if (i > 0) const SizedBox(width: 12),
-                  cell(w.columns[i].toUpperCase(), i, head: true),
-                ],
-              ],
-            ),
+            child: line([
+              for (var i = 0; i < w.columns.length; i++) cell(w.columns[i].toUpperCase(), i, head: true),
+            ], height: 40),
           ),
           Divider(height: 1, color: c.line),
           ConstrainedBox(
@@ -679,21 +724,22 @@ class _DataGridState extends State<DataGrid> {
                         : (r.isOdd ? c.cardSoft.withValues(alpha: 0.6) : null),
                     border: focus ? Border(left: BorderSide(color: c.accent, width: 4)) : null,
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  child: Row(
-                    children: [
-                      for (var i = 0; i < w.columns.length; i++) ...[
-                        if (i > 0) const SizedBox(width: 12),
-                        cell(w.rows[r][i], i, bold: hot),
-                      ],
-                    ],
-                  ),
+                  child: line([for (var i = 0; i < w.columns.length; i++) cell(w.rows[r][i], i, bold: hot)]),
                 );
               },
             ),
           ),
         ],
       ),
+    );
+    if (w.minWidth <= 0) return table;
+    return LayoutBuilder(
+      builder: (context, box) => box.maxWidth >= w.minWidth
+          ? table
+          : SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(width: w.minWidth, child: table),
+            ),
     );
   }
 }

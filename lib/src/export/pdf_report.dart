@@ -286,19 +286,15 @@ Future<Uint8List> buildPdfReport(ReportData d) async {
         ),
         heading('Profile'),
         _profile(s, PdfFont.helvetica(doc.document)),
+        if (d.formation != null && d.formation!.sides.mode != SidesMode.none) ...[
+          heading('Crossfall and cross-section'),
+          _sides(d.formation!, bold, regular, PdfFont.helvetica(doc.document), PdfFont.helveticaBold(doc.document)),
+        ],
         heading('Chainage levels', step: 3),
         table(
-          ['Chainage', 'Distance from start (m)', 'Level (m)', 'Change from start (m)'],
-          [
-            for (final st in s.stations)
-              [
-                st.label,
-                fixed(st.distanceFromStart, 3),
-                fixed(st.level, s.decimals),
-                signed(st.changeFromStart, s.decimals),
-              ],
-          ],
-          numeric: {1, 2, 3},
+          d.levels.heads,
+          d.levels.text,
+          numeric: {for (var i = 1; i < d.levels.heads.length; i++) i},
           strong: {1, s.stations.length},
         ),
         if (cf != null) ...[
@@ -496,5 +492,109 @@ pw.Widget _profile(SlopeResult s, PdfFont labels) {
         ),
       ],
     ),
+  );
+}
+
+/// The sides: each one's offset, crossfall and ΔRL, and the road across (exaggerated) at the start
+pw.Widget _sides(FormationResult f, pw.Font bold, pw.Font regular, PdfFont labels, PdfFont strongLabels) {
+  final x = f.at(f.slope.startChainage);
+  final d = f.slope.decimals;
+  String dir(CrossfallSide s) => s.direction == CrossfallDirection.fallAway ? 'falls away' : 'rises away';
+  pw.Widget side(String name, bool on, CrossfallSide s, double diff) => pw.Expanded(
+    child: pw.Container(
+      margin: const pw.EdgeInsets.only(right: 6),
+      padding: const pw.EdgeInsets.all(7),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: _line, width: 0.6),
+        borderRadius: pw.BorderRadius.circular(5),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            name.toUpperCase(),
+            style: pw.TextStyle(font: bold, fontSize: 7, color: _muted, letterSpacing: 0.7),
+          ),
+          pw.SizedBox(height: 3),
+          pw.Text(
+            on ? '${fixed(s.distance, 3)} m at ${fixed(s.slopePercent.abs(), 2)} %, ${dir(s)}' : 'Off',
+            style: pw.TextStyle(font: bold, fontSize: 9, color: _ink),
+          ),
+          if (on)
+            pw.Text(
+              'ΔRL ${signed(diff, 4)} m = ${fixed(s.distance, 3)} × ${fixed(s.slopePercent.abs(), 2)} ÷ 100',
+              style: pw.TextStyle(font: regular, fontSize: 7.5, color: _muted),
+            ),
+        ],
+      ),
+    ),
+  );
+  return pw.Column(
+    crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+    children: [
+      pw.Row(
+        children: [
+          side('Left side', f.sides.mode.left, f.sides.left, f.sides.leftDifference),
+          side('Right side', f.sides.mode.right, f.sides.right, f.sides.rightDifference),
+        ],
+      ),
+      pw.SizedBox(height: 6),
+      pw.Container(
+        height: 96,
+        decoration: pw.BoxDecoration(
+          border: pw.Border.all(color: _line, width: 0.6),
+          borderRadius: pw.BorderRadius.circular(5),
+        ),
+        child: pw.CustomPaint(
+          painter: (canvas, size) {
+            final cx = size.x / 2;
+            final lo = f.sides.mode.left ? f.sides.left.distance : 0.0;
+            final ro = f.sides.mode.right ? f.sides.right.distance : 0.0;
+            final widest = math.max(math.max(lo, ro), 0.001);
+            final half = size.x / 2 - 60;
+            final lx = cx - half * lo / widest, rx = cx + half * ro / widest;
+            final dl = x.leftDifference, dr = x.rightDifference;
+            final biggest = math.max(math.max(dl.abs(), dr.abs()), 0.001);
+            final mid = size.y / 2 + 4;
+            double y(double diff) => mid + diff / biggest * 22;
+            canvas
+              ..setFillColor(_goldPale)
+              ..moveTo(lx, y(dl))
+              ..lineTo(cx, mid)
+              ..lineTo(rx, y(dr))
+              ..lineTo(rx, 10)
+              ..lineTo(lx, 10)
+              ..closePath()
+              ..fillPath()
+              ..setStrokeColor(_gold)
+              ..setLineWidth(2.2)
+              ..moveTo(lx, y(dl))
+              ..lineTo(cx, mid)
+              ..lineTo(rx, y(dr))
+              ..strokePath()
+              ..setStrokeColor(_navy)
+              ..setLineWidth(0.6)
+              ..moveTo(cx, 8)
+              ..lineTo(cx, size.y - 8)
+              ..strokePath();
+            for (final (px, py) in [(lx, y(dl)), (cx, mid), (rx, y(dr))]) {
+              canvas
+                ..setFillColor(PdfColors.white)
+                ..setStrokeColor(_navy)
+                ..setLineWidth(0.9)
+                ..drawEllipse(px, py, 2.6, 2.6)
+                ..fillAndStrokePath();
+            }
+            void text(String t, double tx, double ty, {bool strong = false}) => canvas
+              ..setFillColor(strong ? _ink : _muted)
+              ..drawString(strong ? strongLabels : labels, 7, t, tx, ty);
+            text('CL ${fixed(x.centreLevel, d)}', cx + 4, mid + 8, strong: true);
+            if (f.sides.mode.left) text('L ${fixed(x.leftLevel, d)}', lx - 4, y(dl) + 8, strong: true);
+            if (f.sides.mode.right) text('R ${fixed(x.rightLevel, d)}', rx - 44, y(dr) + 8, strong: true);
+            text('At ${formatChainage(f.slope.startChainage)} · heights exaggerated', 8, size.y - 12);
+          },
+        ),
+      ),
+    ],
   );
 }

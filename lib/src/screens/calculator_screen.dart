@@ -1,5 +1,6 @@
-// Steps 1 to 3: enter the line, see the slope and its profile with a probe, and the level at
-// every chainage with "Go to chainage". The inputs are remembered between sessions.
+// Steps 1 to 3: enter the centreline and the crossfall on each side, see the slope, its profile
+// and the cross-section at the probe, and the levels at every chainage in one table (Chainage,
+// Left RL, Centre RL, Right RL) with "Go to chainage". The inputs are remembered between sessions.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -8,6 +9,7 @@ import '../state/calculation.dart';
 import '../ui/profile_chart.dart';
 import '../ui/theme.dart';
 import '../ui/widgets.dart';
+import 'crossfall_screen.dart' show CrossSection;
 
 class CalculatorScreen extends StatefulWidget {
   const CalculatorScreen({super.key, required this.calculation});
@@ -21,7 +23,8 @@ const _intervals = [5.0, 10.0, 20.0, 25.0, 50.0, 100.0];
 
 class _CalculatorScreenState extends State<CalculatorScreen> {
   late final Map<String, TextEditingController> _boxes = {
-    for (final f in Calculation.fields) f: TextEditingController(text: widget.calculation.text(f)),
+    for (final f in [...Calculation.fields, ...Calculation.sideFields])
+      f: TextEditingController(text: widget.calculation.text(f)),
   };
   final _focus = List.generate(5, (_) => FocusNode());
   final _goTo = TextEditingController();
@@ -42,7 +45,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
   /// A saved calculation was opened: show its values in the boxes
   void _syncBoxes() {
-    for (final f in Calculation.fields) {
+    for (final f in [...Calculation.fields, ...Calculation.sideFields]) {
       final box = _boxes[f]!;
       if (box.text != calc.text(f)) box.text = calc.text(f);
     }
@@ -79,6 +82,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       builder: (context, _) {
         final result = calc.result;
         final problem = calc.problem;
+        final formation = calc.formationResult;
         return LayoutBuilder(
           builder: (context, box) {
             final pad = box.maxWidth < 720 ? 14.0 : 28.0;
@@ -99,12 +103,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               _results(result, problem),
-                              if (result != null) ...[const SizedBox(height: 16), _profile(result)],
+                              if (result != null) ...[const SizedBox(height: 16), _profile(result, formation)],
                             ],
                           ),
                         ],
                       ),
-                      if (result != null) ...[const SizedBox(height: 16), _levels(result)],
+                      if (result != null) ...[const SizedBox(height: 16), _levels(result, formation)],
                     ],
                   ),
                 ),
@@ -200,7 +204,13 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 22),
+          _sidesInputs(),
           if (problem != null) ...[const SizedBox(height: 14), Notice(problem, kind: NoticeKind.problem)],
+          if (problem == null && calc.sidesProblem != null) ...[
+            const SizedBox(height: 14),
+            Notice(calc.sidesProblem!, kind: NoticeKind.problem),
+          ],
           const SizedBox(height: 16),
           Wrap(
             spacing: 10,
@@ -217,7 +227,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               OutlinedButton.icon(
                 onPressed: () {
                   calc.clear();
-                  for (final f in Calculation.fields) {
+                  for (final f in [...Calculation.fields, ...Calculation.sideFields]) {
                     _boxes[f]!.text = calc.text(f);
                   }
                   _focus.first.requestFocus();
@@ -316,6 +326,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               );
             },
           ),
+          if (calc.mode != SidesMode.none) ...[const SizedBox(height: 12), _sideTiles(r)],
           const SizedBox(height: 14),
           Notice(summary),
         ],
@@ -323,7 +334,119 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     );
   }
 
-  Widget _profile(SlopeResult r) {
+  /// Start and end on the centreline, and each side's crossfall and offset. A side's crossfall is
+  /// signed: − falls away from the centreline, + rises away
+  Widget _sideTiles(SlopeResult r) {
+    final sides = calc.sides;
+    String pct(bool on, CrossfallSide s) => on
+        ? '${s.direction == CrossfallDirection.fallAway && s.slopePercent != 0 ? '−' : (s.slopePercent == 0 ? '' : '+')}${fixed(s.slopePercent.abs(), 2)} %'
+        : 'Off';
+    String off(bool on, CrossfallSide s) => on ? '${fixed(s.distance, 3)} m' : 'Off';
+    return LayoutBuilder(
+      builder: (context, box) => GridView.count(
+        crossAxisCount: box.maxWidth < 560 ? 2 : 3,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: box.maxWidth < 560 ? 1.9 : 2.1,
+        children: [
+          ResultTile(label: 'Start CL RL', value: '${fixed(r.startLevel, r.decimals)} m'),
+          ResultTile(label: 'Left crossfall', value: pct(sides.mode.left, sides.left)),
+          ResultTile(label: 'Left offset', value: off(sides.mode.left, sides.left)),
+          ResultTile(label: 'End CL RL', value: '${fixed(r.endLevel, r.decimals)} m'),
+          ResultTile(label: 'Right crossfall', value: pct(sides.mode.right, sides.right)),
+          ResultTile(label: 'Right offset', value: off(sides.mode.right, sides.right)),
+        ],
+      ),
+    );
+  }
+
+  /// Which sides, and each side's offset, crossfall and direction
+  Widget _sidesInputs() {
+    final c = context.colors;
+    final mode = calc.mode;
+    Text label(String t) => Text(
+      t,
+      style: TextStyle(color: c.muted, fontSize: 11.5, fontWeight: FontWeight.w700, letterSpacing: 0.9),
+    );
+    Widget side(
+      String name,
+      String offset,
+      String percent,
+      CrossfallDirection dir,
+      ValueChanged<CrossfallDirection> set,
+    ) => Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      decoration: BoxDecoration(
+        color: c.cardSoft,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          label('${name.toUpperCase()} SIDE'),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: NumberField(
+                  controller: _boxes[offset]!,
+                  label: '$name offset',
+                  unit: 'm',
+                  signed: false,
+                  onChanged: (v) => calc.setText(offset, v),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: NumberField(
+                  controller: _boxes[percent]!,
+                  label: '$name crossfall',
+                  unit: '%',
+                  signed: false,
+                  onChanged: (v) => calc.setText(percent, v),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ChoiceRow<CrossfallDirection>(
+            values: const [CrossfallDirection.fallAway, CrossfallDirection.riseAway],
+            selected: dir,
+            label: (d) => d == CrossfallDirection.fallAway ? 'Falls away ↓' : 'Rises away ↑',
+            semanticLabel: '$name side direction',
+            onSelected: set,
+          ),
+        ],
+      ),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        label('CROSSFALL · LEFT AND RIGHT OF THE CENTRELINE'),
+        const SizedBox(height: 10),
+        ChoiceRow<SidesMode>(
+          values: SidesMode.values,
+          selected: mode,
+          label: (m) => switch (m) {
+            SidesMode.both => 'Both sides',
+            SidesMode.leftOnly => 'Left only',
+            SidesMode.rightOnly => 'Right only',
+            SidesMode.none => 'Centreline',
+          },
+          semanticLabel: 'Sides',
+          onSelected: (m) => calc.mode = m,
+        ),
+        if (mode.left) side('Left', 'lo', 'lc', calc.leftDirection, (d) => calc.leftDirection = d),
+        if (mode.right) side('Right', 'ro', 'rc', calc.rightDirection, (d) => calc.rightDirection = d),
+      ],
+    );
+  }
+
+  Widget _profile(SlopeResult r, FormationResult? f) {
     final c = context.colors;
     final probe = (_probe ?? (r.startChainage + r.endChainage) / 2).clamp(r.startChainage, r.endChainage);
     return SectionCard(
@@ -381,12 +504,28 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               ),
             ),
           ),
+          if (f != null && f.sides.mode != SidesMode.none) ...[
+            const SizedBox(height: 18),
+            Divider(height: 1, color: c.line),
+            const SizedBox(height: 14),
+            Text(
+              'CROSS-SECTION AT ${formatChainage(probe)}',
+              style: TextStyle(color: c.muted, fontSize: 11.5, fontWeight: FontWeight.w700, letterSpacing: 0.9),
+            ),
+            const SizedBox(height: 6),
+            CrossSection(
+              result: f.at(probe),
+              left: f.sides.mode.left ? f.sides.left : const CrossfallSide(slopePercent: 0, distance: 0),
+              right: f.sides.mode.right ? f.sides.right : const CrossfallSide(slopePercent: 0, distance: 0),
+              height: 200,
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _levels(SlopeResult r) {
+  Widget _levels(SlopeResult r, FormationResult? f) {
     final d = r.decimals;
     final c = context.colors;
     final found = _found;
@@ -460,7 +599,13 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       ),
                       const TextSpan(text: ': '),
                       TextSpan(
-                        text: '${fixed(r.levelAt(found), d)} m',
+                        text: f == null || f.sides.mode == SidesMode.none
+                            ? '${fixed(r.levelAt(found), d)} m'
+                            : [
+                                if (f.sides.mode.left) 'L ${fixed(f.at(found).leftLevel, d)}',
+                                'CL ${fixed(f.at(found).centreLevel, d)}',
+                                if (f.sides.mode.right) 'R ${fixed(f.at(found).rightLevel, d)}',
+                              ].join('  ·  '),
                         style: TextStyle(fontWeight: FontWeight.w800, color: c.ink),
                       ),
                     ],
@@ -470,18 +615,41 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             ],
           ),
           const SizedBox(height: 14),
-          DataGrid(
-            columns: const ['Chainage', 'Distance (m)', 'Level (m)', 'Change (m)'],
-            numeric: const {1, 2, 3},
-            highlighted: {0, r.stations.length - 1},
-            focusRow: focus,
-            rows: [
-              for (final s in r.stations)
-                [s.label, fixed(s.distanceFromStart, 3), fixed(s.level, d), signed(s.changeFromStart, d)],
-            ],
-          ),
+          if (f == null || f.sides.mode == SidesMode.none)
+            DataGrid(
+              columns: const ['Chainage', 'Distance (m)', 'Level (m)', 'Change (m)'],
+              numeric: const {1, 2, 3},
+              highlighted: {0, r.stations.length - 1},
+              focusRow: focus,
+              rows: [
+                for (final s in r.stations)
+                  [s.label, fixed(s.distanceFromStart, 3), fixed(s.level, d), signed(s.changeFromStart, d)],
+              ],
+            )
+          else
+            _formationGrid(f, focus),
         ],
       ),
+    );
+  }
+
+  /// The one table of levels: Chainage | Left RL | Centre RL | Right RL, the centre in the middle
+  Widget _formationGrid(FormationResult f, int? focus) {
+    final d = f.slope.decimals;
+    final left = f.sides.mode.left, right = f.sides.mode.right;
+    return DataGrid(
+      groups: ['', if (left) 'LEFT SIDE', 'CENTRELINE', if (right) 'RIGHT SIDE'],
+      columns: ['Chainage', if (left) 'Left RL (m)', 'Centre RL (m)', if (right) 'Right RL (m)'],
+      numeric: {for (var i = 1; i <= (left ? 1 : 0) + 1 + (right ? 1 : 0); i++) i},
+      centred: {for (var i = 1; i <= (left ? 1 : 0) + 1 + (right ? 1 : 0); i++) i},
+      accentColumn: left ? 2 : 1,
+      highlighted: {0, f.rows.length - 1},
+      focusRow: focus,
+      minWidth: 520,
+      rows: [
+        for (final row in f.rows)
+          [row.station.label, if (left) fixed(row.left!, d), fixed(row.centre, d), if (right) fixed(row.right!, d)],
+      ],
     );
   }
 }

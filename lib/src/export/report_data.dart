@@ -28,9 +28,62 @@ class CrossfallData {
   }
 }
 
+/// The one table of levels every export writes, in the screen's order: Chainage | Left RL |
+/// Centre RL | Right RL (the sides that are on). With the centreline only it is Chainage |
+/// Distance | Level | Change, as before the sides came.
+class LevelsTable {
+  LevelsTable(SlopeResult slope, FormationResult? f) {
+    final d = slope.decimals;
+    if (f == null || f.sides.mode == SidesMode.none) {
+      heads = const ['Chainage', 'Distance from start (m)', 'Level (m)', 'Change from start (m)'];
+      csvHeads = const ['CHAINAGE', 'DIST_M', 'LEVEL_M', 'CHANGE_FROM_START_M'];
+      numbers = [
+        for (final s in slope.stations) [s.distanceFromStart, s.level, s.changeFromStart],
+      ];
+      decimals = [3, d, d];
+      centreColumn = 2;
+      labels = [for (final s in slope.stations) s.label];
+      text = [
+        for (final s in slope.stations)
+          [s.label, fixed(s.distanceFromStart, 3), fixed(s.level, d), signed(s.changeFromStart, d)],
+      ];
+      return;
+    }
+    final left = f.sides.mode.left, right = f.sides.mode.right;
+    heads = ['Chainage', if (left) 'Left RL (m)', 'Centre RL (m)', if (right) 'Right RL (m)'];
+    csvHeads = ['CHAINAGE', if (left) 'LEFT_RL_M', 'CENTRE_RL_M', if (right) 'RIGHT_RL_M'];
+    numbers = [
+      for (final r in f.rows) [if (left) r.left!, r.centre, if (right) r.right!],
+    ];
+    decimals = [for (var i = 0; i < numbers.first.length; i++) d];
+    centreColumn = left ? 2 : 1;
+    labels = [for (final r in f.rows) r.station.label];
+    text = [
+      for (var i = 0; i < labels.length; i++) [labels[i], for (final v in numbers[i]) fixed(v, d)],
+    ];
+  }
+
+  late final List<String> heads;
+  late final List<String> csvHeads;
+
+  /// The station's chainage as the table writes it
+  late final List<String> labels;
+
+  /// The numbers after the chainage, row by row, with each column's decimals
+  late final List<List<double>> numbers;
+  late final List<int> decimals;
+
+  /// Every cell as text
+  late final List<List<String>> text;
+
+  /// The centreline column (counting the chainage as 0), shaded in the reports
+  late final int centreColumn;
+}
+
 class ReportData {
   ReportData({
     required this.slope,
+    this.formation,
     required this.plate,
     this.crossfall,
     this.run,
@@ -40,6 +93,11 @@ class ReportData {
   }) : made = made ?? DateTime.now();
 
   final SlopeResult slope;
+
+  /// The sides worked out with the centreline, or null (centreline only, or a side not filled in)
+  final FormationResult? formation;
+
+  LevelsTable get levels => LevelsTable(slope, formation);
 
   /// The project plate's fields by key (see [plateFields])
   final Map<String, String> plate;
