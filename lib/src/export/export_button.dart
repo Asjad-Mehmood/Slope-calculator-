@@ -28,6 +28,7 @@ class Exporter {
     if (slope == null) return null;
     return ReportData(
       slope: slope,
+      formation: calculation.formationResult,
       plate: ReportData.plateOf(plate),
       crossfall: CrossfallData.fromStore(store),
       run: levelRun.run,
@@ -64,7 +65,7 @@ class Exporter {
       case ExportKind.csv:
         final saved = await saveFile(
           '${d.fileName('Chainage_Levels')}.csv',
-          Uint8List.fromList(chainageLevelsCsv(d.slope)),
+          Uint8List.fromList(chainageLevelsCsv(d.slope, d.formation)),
           mime: 'text/csv',
           extension: 'csv',
         );

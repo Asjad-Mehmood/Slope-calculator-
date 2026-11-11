@@ -329,13 +329,7 @@ class _CrossSectionPainter extends CustomPainter {
       '${fixed(right.distance, 2)} m · ${fixed(right.slopePercent.abs(), 2)} % →',
       Offset((cx + rx) / 2, base),
     );
-    _text(
-      canvas,
-      'Heights exaggerated',
-      Offset(size.width - pad, size.height - 10),
-      align: TextAlign.right,
-      small: true,
-    );
+    _text(canvas, 'Heights exaggerated', Offset(size.width - pad, 8), align: TextAlign.right, small: true);
   }
 
   void _text(

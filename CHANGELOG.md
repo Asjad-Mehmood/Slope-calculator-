@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.1.0
+
+### Road formation levels: left, centre and right
+- The Calculator works out the formation at every chainage: the centreline level from the start
+  and end levels, and the level at an offset on each side from that side's own crossfall.
+  Left and right each have their own offset, crossfall % and direction (falls or rises away);
+  either side can be left out (Both sides, Left only, Right only, Centreline).
+- One table of levels: Chainage | Left RL | Centre RL | Right RL, under LEFT SIDE · CENTRELINE ·
+  RIGHT SIDE, the centreline column shaded; it scrolls sideways on a narrow screen. With the
+  centreline only it is the table as before (distance and change from the start).
+- New result tiles: start and end centreline RL, each side's crossfall (− falls away) and offset.
+- The cross-section at the probe's chainage, under the profile, follows the slider and "Go to
+  chainage", which now gives all three levels.
+- Excel, PDF and CSV write the same table in the same order. The Excel summary and the PDF list
+  each side's offset, crossfall, direction and ΔRL; the PDF draws the cross-section.
+- Saved calculations keep the sides. A first start takes the sides from the Crossfall page if it
+  was used, else 5 m at 2 % (left) and 2.5 % (right), both falling away.
+- Formulas: Centre RL = Y1 + (X − X1) ÷ (X2 − X1) × (Y2 − Y1); ΔRL = offset × crossfall ÷ 100;
+  side RL = Centre RL ∓ ΔRL. Tested with the acceptance case 0+000 to 0+100, 100.000 to 99.000,
+  5 m at 2 % and 2.5 % falling: 99.900 | 100.000 | 99.875 at 0+000, 98.900 | 99.000 | 98.875 at 0+100.
+
 ## 1.0.4
 
 ### Phase 9: testing

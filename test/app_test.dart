@@ -45,6 +45,8 @@ void main() {
 
   testWidgets('Load example fills in the Excel template example', (tester) async {
     await pumpAt(tester, const Size(1440, 1000));
+    // below the crossfall inputs: scrolled to first, as a person would
+    await tester.ensureVisible(find.text('Load example'));
     await tester.tap(find.text('Load example'));
     await tester.pump();
     expect(find.text('−0.343 %'), findsOneWidget);
@@ -124,6 +126,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Calculator').first);
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Load example'));
     await tester.tap(find.text('Load example'));
     await tester.pumpAndSettle();
     expect(find.text('0+020'), findsOneWidget);
@@ -134,6 +137,41 @@ void main() {
     await tester.tap(find.byTooltip('Project plate'));
     await tester.pumpAndSettle();
     expect(find.text('Save'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the acceptance test on screen: one table, Chainage | Left | Centre | Right', (tester) async {
+    await pumpAt(tester, const Size(1440, 1000));
+    Future<void> type(String label, String value) async {
+      final box = find.descendant(of: find.widgetWithText(NumberField, label), matching: find.byType(TextField));
+      await tester.ensureVisible(box);
+      await tester.enterText(box, value);
+      await tester.pump();
+    }
+
+    await type('START LEVEL', '100');
+    await type('END LEVEL', '99');
+    await type('START CHAINAGE', '0+000');
+    await type('END CHAINAGE', '0+100');
+    await type('INTERVAL', '20');
+    await type('LEFT OFFSET', '5');
+    await type('LEFT CROSSFALL', '2');
+    await type('RIGHT OFFSET', '5');
+    await type('RIGHT CROSSFALL', '2.5');
+    await tester.pumpAndSettle();
+    // one table only, its headings in this order
+    expect(find.byType(DataGrid), findsOneWidget);
+    for (final head in ['LEFT RL (M)', 'CENTRE RL (M)', 'RIGHT RL (M)', 'CENTRELINE']) {
+      expect(find.text(head), findsOneWidget, reason: head);
+    }
+    final x = [
+      for (final h in ['LEFT RL (M)', 'CENTRE RL (M)', 'RIGHT RL (M)']) tester.getCenter(find.text(h)).dx,
+    ];
+    expect(x[0] < x[1] && x[1] < x[2], isTrue);
+    for (final v in ['99.900', '99.875', '98.900', '98.875', '99.675']) {
+      expect(find.text(v), findsWidgets, reason: v);
+    }
+    expect(find.text('−1.000 %'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
