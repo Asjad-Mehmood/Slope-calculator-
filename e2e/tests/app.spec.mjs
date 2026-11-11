@@ -56,8 +56,16 @@ test('signed in: the calculator works', async ({ page, browserName }) => {
   await type(page, 'Email', 'sam@company.com');
   await type(page, 'Password', 'right');
   await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
-  await expect(seen(page, '−1.500 %')).toBeVisible();
-  await expect(seen(page, 'The ground falls 3.750 m over 250.000 m')).toBeVisible();
+  await expect(seen(page, 'ENTER YOUR DATA')).toBeVisible({ timeout: 20000 });
+  if ((page.viewportSize()?.width ?? 0) >= 960) {
+    // wide: the results stand beside the inputs
+    await expect(seen(page, '−1.500 %')).toBeVisible();
+    await expect(seen(page, 'The ground falls 3.750 m over 250.000 m')).toBeVisible();
+  } else {
+    // a phone: the results are below the inputs (and the crossfall on each side), out of view;
+    // the chainage worked out under the end chainage shows the example was calculated
+    await expect(seen(page, 'Chainage 1+250.000')).toBeVisible();
+  }
 });
 
 test('signed in on the website: straight to the calculator, and every page opens', async ({ page }) => {
