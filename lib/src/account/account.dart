@@ -157,6 +157,22 @@ class Account extends ChangeNotifier {
     }
   }
 
+  /// Opened some other way than from the Survey Toolkit (a shortcut, the Start menu): not signed
+  /// in on this PC yet, it asks [ask] (the Toolkit on this PC) for a one-use code for the Toolkit's
+  /// account and signs in with it, so the user signs in once, in the Toolkit. Signed in before,
+  /// or no Toolkit to ask: as [restore].
+  Future<void> signInWithToolkitOrRestore(Future<String?> Function() ask) async {
+    if (_user != null || api.token != null || api.platform == 'web') {
+      return restore();
+    }
+    checking = true;
+    notifyListeners();
+    final code = await ask();
+    if (code != null) return signInFromToolkit(code);
+    checking = false;
+    notifyListeners();
+  }
+
   /// Opened from the Survey Toolkit: signs in to the Toolkit's account with the one-use code it was
   /// started with. When the code can't be used (too old, offline), it carries on as [restore].
   Future<void> signInFromToolkit(String code) async {
