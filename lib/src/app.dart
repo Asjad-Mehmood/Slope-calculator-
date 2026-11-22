@@ -25,7 +25,10 @@ import 'update/updater.dart';
 
 /// The app's frame. Light and dark follow the computer until the user picks one.
 class SlopeCalculatorApp extends StatefulWidget {
-  const SlopeCalculatorApp({super.key, this.store, this.api, this.checkForUpdates = false});
+  const SlopeCalculatorApp({super.key, this.store, this.api, this.checkForUpdates = false, this.signinCode});
+
+  /// The one-use sign-in code the Survey Toolkit started it with (`--signin-code=`)
+  final String? signinCode;
 
   /// Look for a newer version once open (the Windows program). Only main() turns it on, so tests
   /// never leave the check's timer and download running.
@@ -63,7 +66,8 @@ class _SlopeCalculatorAppState extends State<SlopeCalculatorApp> {
         if (_account.signedIn && _account.waiting > 0) _account.refresh();
       },
     );
-    _account.restore();
+    final code = widget.signinCode;
+    code == null ? _account.restore() : _account.signInFromToolkit(code);
   }
 
   @override

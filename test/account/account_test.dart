@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:slope_calculator/main.dart';
 import 'package:slope_calculator/src/account/account.dart';
 import 'package:slope_calculator/src/account/api.dart';
 import 'package:slope_calculator/src/app.dart';
@@ -58,6 +59,11 @@ class FakeSite {
         return approved
             ? json({'success': true, 'token': 'tok-1', 'user': user})
             : json({'success': true, 'state': 'pending'});
+      case ('POST', '/api/toolkit/app-code/redeem'):
+        if (body['code'] != 'a' * 64 || body['app'] != 'slope') {
+          return json({'error': 'That sign-in has expired. Please sign in.'}, 401);
+        }
+        return json({'success': true, 'token': 'tok-1', 'user': user});
       case ('POST', '/api/auth/logout'):
         return json({'success': true});
       case ('GET', '/api/slope/jobs'):
@@ -107,6 +113,31 @@ void main() {
         jsonDecode(site.requests.firstWhere((r) => r.url.path == '/api/auth/login').body)['email'],
         'sam@site.com',
       );
+    });
+
+    test('opened from the Survey Toolkit: signed in with its one-use code', () async {
+      final site = FakeSite();
+      final a = Account(site.api(), Store.memory());
+      await a.signInFromToolkit('a' * 64);
+      expect(a.signedIn, isTrue);
+      expect(a.checking, isFalse);
+      expect(a.api.token, 'tok-1');
+      expect(signinCodeFrom(['--other', '--signin-code=${'a' * 64}']), 'a' * 64);
+      expect(signinCodeFrom(const []), isNull);
+    });
+
+    test('a Toolkit code that has run out: the remembered sign-in is used, or the sign-in shows', () async {
+      final site = FakeSite()..confirmed = true;
+      final store = Store.memory();
+      final fresh = Account(site.api(), store);
+      await fresh.signInFromToolkit('b' * 64);
+      expect(fresh.signedIn, isFalse);
+      expect(fresh.checking, isFalse);
+      await fresh.signIn('sam@site.com', 'right');
+      final again = Account(site.api(), store);
+      await again.signInFromToolkit('b' * 64);
+      expect(again.signedIn, isTrue);
+      expect(site.requests.last.url.path, '/api/slope/jobs');
     });
 
     test('a wrong password says so', () async {
