@@ -413,7 +413,7 @@ void main() {
       await start(tester, Store.memory(), site.api());
       expect(signIn, findsOneWidget);
       expect(calculator, findsNothing);
-      expect(find.textContaining('Sign in with your free Excel to KML account'), findsOneWidget);
+      expect(find.textContaining('Sign in with your Excel to KML account'), findsOneWidget);
 
       await tester.enterText(find.widgetWithText(TextField, 'Email'), 'sam@site.com');
       await tester.enterText(find.widgetWithText(TextField, 'Password'), 'right');
