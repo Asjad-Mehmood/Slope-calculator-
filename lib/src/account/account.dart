@@ -168,7 +168,9 @@ class Account extends ChangeNotifier {
       checking = false;
       notifyListeners();
     } on ApiError {
+      // as at start: ask about the remembered sign-in, or show the sign-in
       checking = _user == null && api.token != null;
+      notifyListeners();
       await restore();
     }
   }
