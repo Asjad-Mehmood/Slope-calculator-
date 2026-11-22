@@ -68,9 +68,9 @@ class SignInScreen extends StatelessWidget {
                         SignInCard(
                           account: account,
                           intro:
-                              'Sign in with your free Excel to KML account to use $appName, or create one. '
-                              'The same account as exceltokml.com and Traverse & Level. After the first sign-in '
-                              'the app opens straight away, offline too.',
+                              'Sign in with your Excel to KML account, or create one for free. One account works '
+                              'on exceltokml.com and in all our programs. Opened from the Survey Toolkit, you\'re '
+                              'signed in already.',
                         ),
                       const SizedBox(height: 18),
                       Text(
