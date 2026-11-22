@@ -140,6 +140,40 @@ void main() {
       expect(site.requests.last.url.path, '/api/slope/jobs');
     });
 
+    test('opened from a shortcut, not signed in: the Toolkit on this PC gives a code and it signs in', () async {
+      final site = FakeSite();
+      final a = Account(site.api(), Store.memory());
+      final asked = <bool>[];
+      await a.signInWithToolkitOrRestore(() async {
+        asked.add(true);
+        return 'a' * 64;
+      });
+      expect(asked, hasLength(1));
+      expect(a.signedIn, isTrue);
+      expect(a.checking, isFalse);
+    });
+
+    test('no Toolkit to ask (or it is signed out): the sign-in shows, nothing waits', () async {
+      final a = Account(FakeSite().api(), Store.memory());
+      await a.signInWithToolkitOrRestore(() async => null);
+      expect(a.signedIn, isFalse);
+      expect(a.checking, isFalse);
+    });
+
+    test('signed in on this PC before: the Toolkit isn\'t asked', () async {
+      final site = FakeSite()..confirmed = true;
+      final store = Store.memory();
+      await Account(site.api(), store).signIn('sam@site.com', 'right');
+      var asked = false;
+      final again = Account(site.api(), store);
+      await again.signInWithToolkitOrRestore(() async {
+        asked = true;
+        return 'a' * 64;
+      });
+      expect(asked, isFalse);
+      expect(again.signedIn, isTrue);
+    });
+
     test('a wrong password says so', () async {
       final a = Account(FakeSite().api(), Store.memory());
       await expectLater(

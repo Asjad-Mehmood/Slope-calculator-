@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'account/account.dart';
 import 'account/api.dart';
 import 'account/http_client.dart';
+import 'account/toolkit_code.dart';
 
 import 'brand.dart';
 import 'export/export_button.dart';
@@ -67,7 +68,9 @@ class _SlopeCalculatorAppState extends State<SlopeCalculatorApp> {
       },
     );
     final code = widget.signinCode;
-    code == null ? _account.restore() : _account.signInFromToolkit(code);
+    code == null
+        ? _account.signInWithToolkitOrRestore(() => askToolkitForCode('slope'))
+        : _account.signInFromToolkit(code);
   }
 
   @override
