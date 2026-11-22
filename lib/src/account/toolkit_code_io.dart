@@ -8,7 +8,8 @@ import 'dart:io';
 /// A one-use sign-in code for [app] from the Survey Toolkit on this PC; null when there is no
 /// Toolkit, it isn't signed in, or it doesn't answer in time
 Future<String?> askToolkitForCode(String app) async {
-  if (!Platform.isWindows) return null;
+  // Not on Windows, or under `flutter test` (where no real Toolkit should be asked)
+  if (!Platform.isWindows || Platform.environment.containsKey('FLUTTER_TEST')) return null;
   final exe = await _toolkitExe();
   if (exe == null) return null;
   Directory? dir;
