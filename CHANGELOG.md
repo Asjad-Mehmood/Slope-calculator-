@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0
+- Help (the menu's foot, Settings → About): What's new, the user guide, Report a problem with the
+  version filled in, the error log and the open-source licences
+- Unexpected errors show a short notice with Report a problem and go into logs\errors.log
+- A start screen while the program opens; opened from a shortcut, it signs in with the Survey
+  Toolkit's account on this PC
+- Publisher in Windows' list of programs: exceltokml.com
+
 ## 1.1.0
 
 ### Road formation levels: left, centre and right
