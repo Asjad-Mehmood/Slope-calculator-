@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../brand.dart';
 import '../calc/calc.dart';
+import '../support/app_info.dart';
+import '../support/help.dart';
 import '../ui/settings.dart';
 import '../ui/theme.dart';
 import '../ui/widgets.dart';
@@ -198,14 +200,28 @@ class SettingsScreen extends StatelessWidget {
                               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: c.ink),
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              '$appTagline. By $appPublisher, ${websiteUrl.replaceFirst('https://', '')}',
-                              style: TextStyle(color: c.muted),
-                            ),
+                            Text('$appTagline. By $appPublisher.', style: TextStyle(color: c.muted)),
                             const SizedBox(height: 14),
                             const Notice(
                               'Check results against an approved example before using them for construction.',
                               kind: NoticeKind.warning,
+                            ),
+                            const SizedBox(height: 14),
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 10,
+                              children: [
+                                FilledButton.tonalIcon(
+                                  onPressed: () => showHelp(context, appInfo),
+                                  icon: const Icon(Icons.help_outline_rounded),
+                                  label: const Text('Help and support'),
+                                ),
+                                FilledButton.tonalIcon(
+                                  onPressed: appInfo.report,
+                                  icon: const Icon(Icons.bug_report_outlined),
+                                  label: const Text('Report a problem'),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 14),
                             OutlinedButton.icon(

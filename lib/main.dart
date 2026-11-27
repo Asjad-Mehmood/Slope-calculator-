@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'src/app.dart';
+import 'src/brand.dart';
 import 'src/state/store.dart';
+import 'src/support/crash_log.dart';
 
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+  CrashLog.start(appName: appName, version: appVersion);
   final store = await Store.open();
   runApp(SlopeCalculatorApp(store: store, checkForUpdates: true, signinCode: signinCodeFrom(args)));
 }

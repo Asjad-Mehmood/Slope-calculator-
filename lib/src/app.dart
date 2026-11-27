@@ -19,6 +19,8 @@ import 'state/calculation.dart';
 import 'state/level_run_state.dart';
 import 'state/project_plate.dart';
 import 'state/store.dart';
+import 'support/app_info.dart';
+import 'support/crash_log.dart';
 import 'ui/app_shell.dart';
 import 'ui/settings.dart';
 import 'ui/theme.dart';
@@ -101,7 +103,7 @@ class _SlopeCalculatorAppState extends State<SlopeCalculatorApp> {
           return MediaQuery(
             data: MediaQuery.of(context)
                 .copyWith(textScaler: TextScaler.linear((system * _settings.textScale).clamp(0.85, 2.0))),
-            child: child!,
+            child: CrashNotice(onReport: appInfo.report, child: child!),
           );
         },
         home: _SignedInOnly(
