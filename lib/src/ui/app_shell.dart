@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../account/account.dart';
 import '../brand.dart';
+import '../support/app_info.dart';
+import '../support/help.dart';
 import 'settings.dart';
 import 'theme.dart';
 
@@ -226,10 +228,16 @@ class _Sidebar extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 18),
-              child: Text(
-                'Version $appVersion',
-                style: TextStyle(fontSize: 12, color: c.muted, fontFeatures: tabular),
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
+              child: TextButton.icon(
+                key: const ValueKey('help'),
+                onPressed: () => showHelp(context, appInfo),
+                style: TextButton.styleFrom(foregroundColor: c.muted, alignment: Alignment.centerLeft),
+                icon: const Icon(Icons.help_outline_rounded, size: 18),
+                label: const Text(
+                  'Help  ·  Version $appVersion',
+                  style: TextStyle(fontSize: 12, fontFeatures: tabular),
+                ),
               ),
             ),
           ],

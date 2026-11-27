@@ -20,7 +20,7 @@ void main() {
   testWidgets('wide screen: menu with the name and version, and the example calculated', (tester) async {
     await pumpAt(tester, const Size(1440, 1000));
     expect(find.text(appName), findsOneWidget);
-    expect(find.text('Version $appVersion'), findsOneWidget);
+    expect(find.text('Help  ·  Version $appVersion'), findsOneWidget);
     expect(find.text('−1.500 %'), findsOneWidget);
     expect(find.textContaining('The ground falls 3.750 m over 250.000 m'), findsOneWidget);
   });
@@ -28,7 +28,7 @@ void main() {
   testWidgets('phone: a bar along the bottom instead of the menu', (tester) async {
     await pumpAt(tester, const Size(390, 844));
     expect(find.byType(NavigationBar), findsOneWidget);
-    expect(find.text('Version $appVersion'), findsNothing);
+    expect(find.text('Help  ·  Version $appVersion'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

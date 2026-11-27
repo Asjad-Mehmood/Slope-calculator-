@@ -238,7 +238,7 @@ Future<Uint8List> buildPdfReport(ReportData d) async {
           children: [
             pw.Expanded(
               child: pw.Text(
-                'Made with $appName $appVersion by $appPublisher (${websiteUrl.replaceFirst('https://', '')}). '
+                'Made with $appName $appVersion by $appPublisher. '
                 'Check results against an approved example before construction use.',
                 style: const pw.TextStyle(fontSize: 6.8, color: _muted),
               ),
