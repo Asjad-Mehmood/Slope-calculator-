@@ -6,7 +6,7 @@
 - Unexpected errors show a short notice with Report a problem and go into logs\errors.log
 - A start screen while the program opens; opened from a shortcut, it signs in with the Survey
   Toolkit's account on this PC
-- Publisher in Windows' list of programs: exceltokml.com
+- Publisher in Windows' list of programs: SurveyX Digital
 
 ## 1.1.0
 
