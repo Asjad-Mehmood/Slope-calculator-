@@ -2,9 +2,13 @@ name: Build and Release
 
 # Runs when you push a tag such as v1.0.1 (publishing a GitHub release with a new tag does this).
 #
-# This repository is public, so its releases are too: every installed copy reads latest.json and
-# the installer from this repository's latest release, and www.exceltokml.com/slope-calculation
-# links to the installer there. The release description comes from docs/releases/<tag>.md.
+# The code is to become private, and GitHub keeps a private repository's releases private too.
+# So every release is also published to the public releases repository
+# Asjad-Mehmood/slope-calculator-releases (installers only, no code): installed copies from 1.2.0
+# read latest.json and the installer there, and www.exceltokml.com links to it. That needs the
+# secret RELEASES_TOKEN: a fine-grained token with "Contents: Read and write" on that repository.
+# The release here stays too, for copies older than 1.2.0 (they update from this repository) and as
+# the record of what was built from which commit. The description comes from docs/releases/<tag>.md.
 on:
   push:
     tags:
@@ -15,10 +19,13 @@ permissions:
 
 env:
   FLUTTER_VERSION: '3.47.7'
+  PUBLIC_REPO: Asjad-Mehmood/slope-calculator-releases
 
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      HAS_RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -81,15 +88,40 @@ jobs:
             installer/SlopeCalculator-Setup.exe
             installer/latest.json
 
+      - name: Publish to the public releases repository
+        if: env.HAS_RELEASES_TOKEN == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: ${{ env.PUBLIC_REPO }}
+          token: ${{ secrets.RELEASES_TOKEN }}
+          tag_name: ${{ github.ref_name }}
+          name: Slope Calculator ${{ github.ref_name }}
+          body_path: ${{ steps.notes.outputs.path }}
+          make_latest: true
+          files: |
+            installer/SlopeCalculator-Setup.exe
+            installer/latest.json
+
+      - name: No public release
+        if: env.HAS_RELEASES_TOKEN != 'true'
+        shell: bash
+        run: |
+          echo "::error::No RELEASES_TOKEN secret, so this release is not in ${PUBLIC_REPO}, where copies from 1.2.0 update from."
+          exit 1
+
   # Download the published release the way installed copies do: latest.json, then the installer,
   # checked against its SHA-256. A failure here means installed copies cannot update.
+  # Both places: the public releases repository (1.2.0 and later) and this one (older copies).
   verify:
     needs: build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo: ['Asjad-Mehmood/slope-calculator-releases', '${{ github.repository }}']
     steps:
       - name: Download and verify the release
         run: |
-          base="https://github.com/${GITHUB_REPOSITORY}/releases/latest/download"
+          base="https://github.com/${{ matrix.repo }}/releases/latest/download"
           want="${GITHUB_REF_NAME#v}"
           for i in 1 2 3 4 5; do
             if curl -fsSL "$base/latest.json" -o latest.json && grep -q "\"version\":\"$want\"" latest.json; then
