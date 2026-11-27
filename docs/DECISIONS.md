@@ -9,7 +9,7 @@ Agreed before the rewrite started (phase 0). Change them here when they change.
 | Language and toolkit | **Flutter (Dart)**, one codebase for Windows, web, Android and iPhone |
 | Windows program | Native Flutter build. **No WebView2**, no Edge, no web page in a window. NSIS installer per user, no administrator rights, self-update from GitHub releases, as Excel to KML and Traverse & Level. |
 | Publisher details | Company "Excel to KML"; copyright "© 2026 Asjad Mehmood", as the other programs |
-| Account | The **Excel to KML account** through the website's APIs: the same sign-up with the emailed code, sign-in and Google sign-in as the other apps. The calculator works signed out; saving to the dashboard needs an account. |
+| Account | The **SurveyX Digital account** through the website's APIs: the same sign-up with the emailed code, sign-in and Google sign-in as the other apps. The calculator works signed out; saving to the dashboard needs an account. |
 | App language | English, in the same plain wording as Excel to KML and Traverse & Level |
 | Themes | Light and dark, following the computer by default. Navy and Cream from V28 are dropped. |
 | Logo | New, made for this app: a gold graded line with three stations over its rise and run, on navy |

@@ -19,7 +19,7 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('help')));
     await tester.pumpAndSettle();
-    expect(find.text('Version $appVersion · exceltokml.com'), findsOneWidget);
+    expect(find.text('Version $appVersion · SurveyX Digital'), findsOneWidget);
     for (final t in ["What's new", 'User guide', 'Report a problem', 'Open-source licences']) {
       expect(find.text(t), findsOneWidget);
     }
@@ -30,7 +30,7 @@ void main() {
 
   test('Report a problem opens the contact form with the program and version', () {
     final u = Uri.parse(appInfo.reportUrl);
-    expect(u.host, 'www.exceltokml.com');
+    expect(u.host, 'www.surveyxdigital.com');
     expect(u.path, '/contact');
     expect(u.queryParameters, containsPair('topic', 'problem'));
     expect(u.queryParameters, containsPair('program', 'slope'));

@@ -148,7 +148,7 @@ const destinations = [
     label: 'Saved',
     icon: Icons.folder_open_outlined,
     title: 'Saved calculations',
-    subtitle: 'Your calculations in your Excel to KML account',
+    subtitle: 'Your calculations in your SurveyX Digital account',
   ),
   Destination(label: 'Settings', icon: Icons.tune_outlined, title: 'Settings', subtitle: 'Units, decimals and display'),
 ];

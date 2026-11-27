@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 
 const appName = 'Slope Calculator';
 const appTagline = 'Slope, gradient and chainage levels';
-const appPublisher = 'exceltokml.com';
+const appPublisher = 'SurveyX Digital';
 const appVersion = String.fromEnvironment('APP_VERSION', defaultValue: '1.1.0');
-const websiteUrl = 'https://www.exceltokml.com';
+const websiteUrl = 'https://www.surveyxdigital.com';
 
 /// The logo's colours: deep navy with survey gold, the same family as Excel to KML and Traverse & Level.
 abstract final class BrandColors {

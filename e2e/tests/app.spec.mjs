@@ -41,7 +41,7 @@ async function type(page, label, text) {
 test('opens on the sign-in, and a wrong password says so', async ({ page, browserName }) => {
   await fakeSite(page);
   await open(page);
-  await expect(seen(page, 'YOUR EXCEL TO KML ACCOUNT')).toBeVisible();
+  await expect(seen(page, 'YOUR SURVEYX DIGITAL ACCOUNT')).toBeVisible();
   test.fixme(!typingWorks(browserName), 'typing in Playwright WebKit; Safari is checked by hand');
   await type(page, 'Email', 'sam@company.com');
   await type(page, 'Password', 'wrong');

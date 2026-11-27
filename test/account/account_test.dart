@@ -271,7 +271,7 @@ void main() {
     await tester.pumpWidget(SlopeCalculatorApp(store: Store.memory(), api: site.api()));
     await tester.pumpAndSettle();
     // the app opens on the sign-in
-    expect(find.text('YOUR EXCEL TO KML ACCOUNT'), findsOneWidget);
+    expect(find.text('YOUR SURVEYX DIGITAL ACCOUNT'), findsOneWidget);
     await tester.enterText(find.widgetWithText(TextField, 'Email'), 'sam@site.com');
     await tester.enterText(find.widgetWithText(TextField, 'Password'), 'right');
     await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
@@ -440,14 +440,14 @@ void main() {
     }
 
     final calculator = find.text('ENTER YOUR DATA');
-    final signIn = find.text('YOUR EXCEL TO KML ACCOUNT');
+    final signIn = find.text('YOUR SURVEYX DIGITAL ACCOUNT');
 
     testWidgets('Windows: the sign-in first, then the app; signing out comes back to it', (tester) async {
       final site = FakeSite()..confirmed = true;
       await start(tester, Store.memory(), site.api());
       expect(signIn, findsOneWidget);
       expect(calculator, findsNothing);
-      expect(find.textContaining('Sign in with your Excel to KML account'), findsOneWidget);
+      expect(find.textContaining('Sign in with your SurveyX Digital account'), findsOneWidget);
 
       await tester.enterText(find.widgetWithText(TextField, 'Email'), 'sam@site.com');
       await tester.enterText(find.widgetWithText(TextField, 'Password'), 'right');
@@ -510,7 +510,7 @@ void main() {
       await tester.enterText(find.widgetWithText(TextField, 'Password'), 'right');
       await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
       await tester.pumpAndSettle();
-      expect(find.textContaining('Could not reach exceltokml.com'), findsOneWidget);
+      expect(find.textContaining('Could not reach surveyxdigital.com'), findsOneWidget);
       expect(calculator, findsNothing);
     });
   });

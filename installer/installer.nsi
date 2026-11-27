@@ -38,11 +38,11 @@ ShowInstDetails show
 
 VIProductVersion "${VERSION}.0"
 VIAddVersionKey "ProductName" "${APP}"
-VIAddVersionKey "CompanyName" "exceltokml.com"
+VIAddVersionKey "CompanyName" "SurveyX Digital"
 VIAddVersionKey "FileDescription" "${APP} installer"
 VIAddVersionKey "FileVersion" "${VERSION}"
 VIAddVersionKey "ProductVersion" "${VERSION}"
-VIAddVersionKey "LegalCopyright" "Copyright (c) 2026 Asjad Mehmood"
+VIAddVersionKey "LegalCopyright" "Copyright (c) 2026 SurveyX Digital"
 
 Section "Install"
   ; Windows will not overwrite a running program, so close it first
@@ -64,8 +64,8 @@ Section "Install"
 
   WriteRegStr HKCU "${KEY}" "DisplayName" "${APP}"
   WriteRegStr HKCU "${KEY}" "DisplayVersion" "${VERSION}"
-  WriteRegStr HKCU "${KEY}" "Publisher" "exceltokml.com"
-  WriteRegStr HKCU "${KEY}" "URLInfoAbout" "https://www.exceltokml.com/slope-calculation"
+  WriteRegStr HKCU "${KEY}" "Publisher" "SurveyX Digital"
+  WriteRegStr HKCU "${KEY}" "URLInfoAbout" "https://www.surveyxdigital.com/slope-calculation"
   WriteRegStr HKCU "${KEY}" "DisplayIcon" "$INSTDIR\icon.ico"
   WriteRegStr HKCU "${KEY}" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "${KEY}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
