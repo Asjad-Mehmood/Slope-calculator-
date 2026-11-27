@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
 /// Where installed copies look: the newest release of the public repository
-const releaseBase = 'https://github.com/Asjad-Mehmood/slope-calculator-/releases/latest/download/';
+const releaseBase = 'https://github.com/Asjad-Mehmood/slope-calculator-releases/releases/latest/download/';
 const manifestName = 'latest.json';
 const installerName = 'SlopeCalculator-Setup.exe';
 

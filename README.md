@@ -86,9 +86,11 @@ maskable icons and iPhone. Every icon file (`windows/runner/resources/app_icon.i
    and then downloads them back the way installed copies do. If that last job fails, installed
    copies can't update: fix it first.
 
-Installed copies read `latest.json` from
-`https://github.com/Asjad-Mehmood/slope-calculator-/releases/latest/download/`, so this repository
-and its releases must stay public under that name.
+Installed copies from 1.2.0 read `latest.json` from the public releases repository
+`https://github.com/Asjad-Mehmood/slope-calculator-releases/releases/latest/download/` (installers
+only, no code). The workflow publishes there with the `RELEASES_TOKEN` secret, a fine-grained
+token with "Contents: Read and write" on that repository. Copies older than 1.2.0 still read this
+repository's releases, so keep it public until they have updated; after that it can be private.
 
 ### Version
 

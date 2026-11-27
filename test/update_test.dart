@@ -30,7 +30,7 @@ void main() {
   });
 
   test('installed copies read from the public repository', () {
-    expect(releaseBase, 'https://github.com/Asjad-Mehmood/slope-calculator-/releases/latest/download/');
+    expect(releaseBase, 'https://github.com/Asjad-Mehmood/slope-calculator-releases/releases/latest/download/');
     expect(installerName, 'SlopeCalculator-Setup.exe');
   });
 }
