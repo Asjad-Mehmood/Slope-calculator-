@@ -1068,7 +1068,7 @@ html,body{background:var(--bg)!important;color:var(--ink)}
   <div class="sim-controls"><button id="simToggle" type="button">Pause animation</button><button id="simReset" type="button">Reset simulator</button><span class="result-line" id="simLevel">Calculated point level: —</span></div>
  </section>
  <section class="card"><h3>7 · Dashboard — recent saved calculations</h3><p class="small-note">Local demo history for this browser. Production multi-device history needs a server database linked to the website login.</p><div class="tw"><table><thead><tr><th>Date / time</th><th>Centreline RL</th><th>Left RL</th><th>Right RL</th></tr></thead><tbody id="historyRows"><tr><td colspan="4">No saved calculations yet.</td></tr></tbody></table></div><div class="act"><button class="s" id="clearHistory" type="button">Clear local history</button></div></section>
- <div class="foot"> · Slope Calculation Application · <a href="https://www.exceltokml.com/" target="_blank" rel="noopener">exceltokml.com</a></div>
+ <div class="foot"> · Slope Calculation Application · <a href="https://www.surveyxdigital.com/" target="_blank" rel="noopener">exceltokml.com</a></div>
 </main>
 <div id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
@@ -1313,7 +1313,7 @@ $('gateBackBtn').onclick=function(){
  // Return to the screen behind the dialog without creating a demo account.
  if(location.hash==='#calculator'){show(1)}else{show(0)}
 };
-$('registerBtn').onclick=function(){window.open('https://www.exceltokml.com/','_blank','noopener');};
+$('registerBtn').onclick=function(){window.open('https://www.surveyxdigital.com/','_blank','noopener');};
 $('loginBtn').onclick=function(){var name=$('loginName').value.trim(),email=$('loginEmail').value.trim();if(!name||!email||!/^\S+@\S+\.\S+$/.test(email)){toast('Enter your name and a valid email');return}localStorage.setItem(profileKey,JSON.stringify({name:name,email:email,createdAt:new Date().toISOString(),mode:'local-demo'}));$('gate').style.display='none';setGreeting();renderHistory();toast('Local demo profile ready');};
 function renderHistory(){var a=[];try{a=JSON.parse(localStorage.getItem(historyKey)||'[]')}catch(e){};$('historyRows').innerHTML=a.length?a.map(function(r){return '<tr><td>'+r.date+'</td><td>'+r.cl+'</td><td>'+r.left+'</td><td>'+r.right+'</td></tr>'}).join(''):'<tr><td colspan="4">No saved calculations yet.</td></tr>';}
 function cross(){var cl=Number($('clLevel').value),ls=Number($('leftSlope').value),ld=Number($('leftDist').value),rs=Number($('rightSlope').value),rd=Number($('rightDist').value),ldi=Number($('leftDir').value),rdi=Number($('rightDir').value);if(![cl,ls,ld,rs,rd].every(Number.isFinite)||ld<0||rd<0){toast('Check centreline, slope and distance inputs');return null}var left=cl+ldi*ld*Math.abs(ls)/100,right=cl+rdi*rd*Math.abs(rs)/100;$('leftResult').textContent='Left level: '+left.toFixed(3)+' m ('+(left-cl>=0?'rise ':'fall ')+Math.abs(left-cl).toFixed(3)+' m)';$('rightResult').textContent='Right level: '+right.toFixed(3)+' m ('+(right-cl>=0?'rise ':'fall ')+Math.abs(right-cl).toFixed(3)+' m)';$('crossFormula').textContent='Left: '+cl.toFixed(3)+' '+(ldi<0?'−':'+')+' ('+ld.toFixed(3)+' × '+Math.abs(ls).toFixed(3)+' ÷ 100) = '+left.toFixed(3)+' m | Right: '+cl.toFixed(3)+' '+(rdi<0?'−':'+')+' ('+rd.toFixed(3)+' × '+Math.abs(rs).toFixed(3)+' ÷ 100) = '+right.toFixed(3)+' m';return {cl:cl,left:left,right:right};}

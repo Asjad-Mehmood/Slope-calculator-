@@ -1,4 +1,4 @@
-// The Excel to KML account in the app: sign in or create an account (with the 6-digit code the
+// The SurveyX Digital account in the app: sign in or create an account (with the 6-digit code the
 // website emails), sign in through the browser (Google and saved passwords work there), and the
 // calculations kept in the account.
 import 'dart:async';

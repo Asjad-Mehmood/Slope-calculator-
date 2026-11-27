@@ -97,4 +97,4 @@ and its releases must stay public under that name.
 
 ## Licence
 
-Copyright (c) 2026 Asjad Mehmood. All rights reserved. See [LICENSE](LICENSE).
+Copyright (c) 2026 SurveyX Digital. All rights reserved. See [LICENSE](LICENSE).

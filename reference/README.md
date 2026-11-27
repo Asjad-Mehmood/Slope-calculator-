@@ -24,7 +24,7 @@ accounts.
 5. **Excel export needed internet.** The Excel library was loaded from jsDelivr.
 6. **The optical simulator never stopped.** It redrew every 0.12 s, even when closed or hidden.
 7. **The Excel report had no level book.** Only a separate CSV.
-8. **The account was a local demo**, not the Excel to KML account.
+8. **The account was a local demo**, not the SurveyX Digital account.
 
 ## Results to match (checked in V28)
 

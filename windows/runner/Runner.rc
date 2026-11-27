@@ -93,7 +93,7 @@ BEGIN
             VALUE "FileDescription", "Slope Calculator - slope, gradient and chainage levels" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "SlopeCalculator" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 Asjad Mehmood. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 SurveyX Digital. All rights reserved." "\0"
             VALUE "OriginalFilename", "SlopeCalculator.exe" "\0"
             VALUE "ProductName", "Slope Calculator" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

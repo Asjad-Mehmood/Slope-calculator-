@@ -1,4 +1,4 @@
-// Saved: sign in with the Excel to KML account, then keep calculations in it and open them on any
+// Saved: sign in with the SurveyX Digital account, then keep calculations in it and open them on any
 // device: the Windows program, the web app or a phone.
 import 'dart:async';
 
@@ -247,7 +247,7 @@ class _OfflineNote extends StatelessWidget {
     final n = account.waiting;
     final waiting = n == 0 ? '' : ' $n ${n == 1 ? 'change is' : 'changes are'} waiting to be sent.';
     final text = account.offline
-        ? 'Offline: this is the list from the last time the app reached exceltokml.com.$waiting'
+        ? 'Offline: this is the list from the last time the app reached surveyxdigital.com.$waiting'
         : '$n ${n == 1 ? 'change is' : 'changes are'} waiting to be sent to your account.';
     return Wrap(
       spacing: 12,
@@ -565,7 +565,7 @@ class _SignInCardState extends State<SignInCard> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Your browser is open at exceltokml.com. Sign in there (Google works), then confirm this code:',
+            'Your browser is open at surveyxdigital.com. Sign in there (Google works), then confirm this code:',
             style: TextStyle(color: c.ink, height: 1.45),
           ),
           const SizedBox(height: 14),
@@ -613,7 +613,7 @@ class _SignInCardState extends State<SignInCard> {
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 520),
       child: SectionCard(
-        title: 'Your Excel to KML account',
+        title: 'Your SurveyX Digital account',
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

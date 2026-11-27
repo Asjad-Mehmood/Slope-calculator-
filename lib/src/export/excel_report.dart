@@ -113,7 +113,7 @@ List<int> buildExcelReport(ReportData d) {
   }
   plate
     ..values(['Units', 'Metres (m), unless noted'])
-    ..values(['Report made', '${d.date} with Slope Calculator ${d.version} (Excel to KML)']);
+    ..values(['Report made', '${d.date} with Slope Calculator ${d.version} (SurveyX Digital)']);
 
   // Slope Summary
   final sum = _Sheet(excel['Slope Summary'])
