@@ -100,10 +100,12 @@ class _SlopeCalculatorAppState extends State<SlopeCalculatorApp> {
         // up to twice the normal size so the layouts still fit
         builder: (context, child) {
           final system = MediaQuery.textScalerOf(context).scale(100) / 100;
-          return MediaQuery(
-            data: MediaQuery.of(context)
-                .copyWith(textScaler: TextScaler.linear((system * _settings.textScale).clamp(0.85, 2.0))),
-            child: CrashNotice(onReport: appInfo.report, child: child!),
+          return UiScale(
+            child: MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear((system * _settings.textScale).clamp(0.85, 2.0))),
+              child: CrashNotice(onReport: appInfo.report, child: child!),
+            ),
           );
         },
         home: _SignedInOnly(
@@ -259,6 +261,46 @@ class _HomeScreenState extends State<HomeScreen> {
           // only the page on screen runs its animations
           for (var i = 0; i < pages.length; i++) TickerMode(enabled: i == _page, child: pages[i]),
         ],
+      ),
+    );
+  }
+}
+
+/// On a wide window (a laptop or desktop screen) the whole app is drawn at 85%, like a browser's
+/// zoom at 85%: text, boxes and spacing together, so more of the work fits on the screen. A phone
+/// or a narrow window stays at 100%. The app lays out for the larger size and is painted smaller;
+/// taps, scrolling and typing follow the same transform, so they land where they look.
+class UiScale extends StatelessWidget {
+  const UiScale({super.key, required this.child});
+
+  final Widget child;
+
+  static const scale = 0.85;
+  static const fromWidth = 1100.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    if (mq.size.width < fromWidth) return child;
+    const s = scale;
+    final size = mq.size / s;
+    return MediaQuery(
+      data: mq.copyWith(
+        size: size,
+        padding: mq.padding / s,
+        viewPadding: mq.viewPadding / s,
+        viewInsets: mq.viewInsets / s,
+        devicePixelRatio: mq.devicePixelRatio * s,
+      ),
+      child: ClipRect(
+        child: OverflowBox(
+          alignment: Alignment.topLeft,
+          minWidth: size.width,
+          maxWidth: size.width,
+          minHeight: size.height,
+          maxHeight: size.height,
+          child: Transform.scale(scale: s, alignment: Alignment.topLeft, child: child),
+        ),
       ),
     );
   }
